@@ -1,0 +1,50 @@
+{
+  "knowledge_points": [
+    {
+      "id": "A",
+      "name": "A"
+    },
+    {
+      "id": "B",
+      "name": "B"
+    },
+    {
+      "id": "C",
+      "name": "C"
+    },
+    {
+      "id": "D",
+      "name": "D"
+    },
+    {
+      "id": "E",
+      "name": "E"
+    },
+    {
+      "id": "F",
+      "name": "F"
+    },
+    {
+      "id": "G",
+      "name": "G"
+    },
+    {
+      "id": "H",
+      "name": "H"
+    }
+  ],
+
+  "links": [
+    { "parent_id": "A", "child_id": "B" },
+    { "parent_id": "A", "child_id": "C" },
+    { "parent_id": "B", "child_id": "D" },
+    { "parent_id": "B", "child_id": "E" },
+    { "parent_id": "C", "child_id": "F" },
+    { "parent_id": "D", "child_id": "E" },
+    { "parent_id": "D", "child_id": "H" },
+    { "parent_id": "E", "child_id": "G" },
+    { "parent_id": "F", "child_id": "E" },
+    { "parent_id": "F", "child_id": "H" },
+    { "parent_id": "G", "child_id": "H" }
+  ]
+}
