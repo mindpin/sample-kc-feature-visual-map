@@ -1,0 +1,3 @@
+[submodule "data"]
+	path = data
+	url = git@github.com:mindpin/sample-data-knowledge-points.git
