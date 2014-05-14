@@ -1,26 +1,37 @@
-FIXTRUE_G1_JSON_URL = 'fixture/g1.json'
+FIXTRUE_GRAPH_JSON_URL = 'fixture/graph.json'
 DATA_JS_JSON_URL = 'data/js/js.json'
 
-jQuery ->
+load_json = (url, func)->
   jQuery.ajax
-    url: FIXTRUE_G1_JSON_URL
+    url: url
     type: 'GET'
     dataType: 'json'
-    success: (json_obj)->
-      do_test json_obj
+    success: (obj)->
+      func(obj)
 
-do_test = (json_obj)->
+jQuery ->
+  load_json FIXTRUE_GRAPH_JSON_URL, (obj)->
+    do_test obj['G1'], obj['G2'], obj['G3']
+
+  load_json DATA_JS_JSON_URL, (obj)->
+    js_net = new KnowledgeNet(obj)
+
+    test '查找多余边-JS', ->
+      redundant_edges = js_net.get_redundant_edges()
+      deepEqual redundant_edges.sort(), [
+        ['n16', 'n89']
+      ]
+
+do_test = (g1_obj, g2_obj, g3_obj)->
   test 'JSON Object 检查', ->
-    console.log json_obj
-    ok json_obj['points'].length == 8
-    ok json_obj['edges'].length == 11
+    ok g1_obj['points'].length == 8
+    ok g1_obj['edges'].length == 11
 
   (->
-    knet = new KnowledgeNet(json_obj)
+    knet = new KnowledgeNet(g1_obj)
+    knet2 = new KnowledgeNet(g2_obj)
 
     test '对象构建', ->
-      console.log knet
-      console.log knet.points()
       ok knet.points().length == 8
       ok knet.edges().length == 11
 
@@ -32,42 +43,198 @@ do_test = (json_obj)->
         equal n.id, 'A'
         equal n.name, 'A'
 
-      test '节点关联的边-A', ->
+      test '节点关联的边-G1-A', ->
         edges = n.edges
         equal edges.length, 2 
-        ok edges.indexOf ['A', 'B'] > -1
-        ok edges.indexOf ['A', 'C'] > -1
+        deepEqual edges.sort(), [['A', 'B'], ['A', 'C']]
 
-      test '节点关联的边-E', ->
+      test '节点关联的边-G1-E', ->
         edges = ne.edges
         equal edges.length, 4
-        ok edges.indexOf ['B', 'E'] > -1
-        ok edges.indexOf ['D', 'E'] > -1
-        ok edges.indexOf ['F', 'E'] > -1
-        ok edges.indexOf ['E', 'G'] > -1
+        deepEqual edges.sort(), [['B', 'E'], ['D', 'E'], ['E', 'G'], ['F', 'E']]
 
-      test '子节点和父节点-A', ->
+      test '子节点和父节点-G1-A', ->
         equal n.parents.length, 0
         equal n.children.length, 2
-        ok n.children.indexOf 'B' > -1
-        ok n.children.indexOf 'C' > -1
-        ok n.children.indexOf 'D' == -1
+        deepEqual n.children.sort(), ['B', 'C']
 
-      test '子节点和父节点-E', ->
+      test '子节点和父节点-G1-E', ->
         equal ne.parents.length, 3
-        ok n.parents.indexOf 'B' > -1
-        ok n.parents.indexOf 'D' > -1
-        ok n.parents.indexOf 'F' > -1
+        deepEqual ne.parents.sort(), ['B', 'D', 'F']
 
         equal ne.children.length, 1
-        ok n.children.indexOf 'G' > -1
+        deepEqual ne.children, ['G']
     )()
 
-    test '查找根节点', ->
+    test '查找根节点-G1', ->
       roots = knet.roots()
       equal roots.length, 1
-      equal roots[0].name, 'A'
+      ok knet.is_root 'A'
+
+    test '查找根节点-G2', ->
+      roots = knet2.roots()
+      equal roots.length, 3
+      ok knet2.is_root 'I'
+      ok knet2.is_root 'J'
+      ok knet2.is_root 'O'
+      ok !knet2.is_root 'P'
+
   )()
 
-# test "去除根节点", ->
-#   ok true, 'ok'
+  (->
+    knet1 = new KnowledgeNet(g1_obj)
+    knet2 = new KnowledgeNet(g2_obj)
+    knet3 = new KnowledgeNet(g3_obj)
+
+    test '查找多余边-G1', ->
+      redundant_edges = knet1.get_redundant_edges()
+      deepEqual redundant_edges.sort(), [
+        ['B', 'E'], ['D', 'H'], ['F', 'H']
+      ]
+
+    test '查找多余边-G2', ->
+      redundant_edges = knet2.get_redundant_edges()
+      deepEqual redundant_edges.sort(), []
+
+    test '查找多余边-G3', ->
+      redundant_edges = knet3.get_redundant_edges()
+      deepEqual redundant_edges.sort(), [
+        ['A', 'C'], ['A', 'D'], ['B', 'E'], ['C', 'F']
+      ]
+
+    test '剔除多余边-G1', ->
+      c = knet1.edges().length
+      knet1.clean_redundant_edges()
+      equal knet1.edges().length, c - 3 
+
+    test '剔除多余边-G2', ->
+      c = knet2.edges().length
+      knet2.clean_redundant_edges()
+      equal knet2.edges().length, c 
+
+    test '剔除多余边-G3', ->
+      c = knet3.edges().length
+      knet3.clean_redundant_edges()
+      equal knet3.edges().length, c - 4 
+  )()
+
+  (->
+    knet = new KnowledgeNet(g1_obj)
+    ds = new KnowledgeNet.DistanceSet knet
+
+    test 'set#is_parents_here', ->
+      ds.set = {}
+      p = {id:'A', parents:[]}
+      ok ds.is_parents_here p
+
+    test 'set#is_parents_here', ->
+      ds.set = {
+        'A':{}
+        'B':{}
+      }
+      p = {id:'C', parents:['A']}
+      ok ds.is_parents_here p
+
+    test 'set#is_parents_here', ->
+      ds.set = {
+        'A':{}
+        'B':{}
+        'C':{}
+      }
+      p1 = {id:'D', parents:['A', 'B', 'C']}
+      p2 = {id:'E', parents:['C', 'D']}
+      ok ds.is_parents_here p1
+      ok !ds.is_parents_here p2
+  )()
+
+  (->
+    knet = new KnowledgeNet(g1_obj)
+    ds = new KnowledgeNet.DistanceSet knet
+
+    test 'set#add A', ->
+      ds.add knet.find_by('A')
+      deepEqual ds.set, {
+        'A':{}
+      }
+
+    test 'set#add B', ->
+      ds.add knet.find_by('B')
+      deepEqual ds.set, {
+        'A':{'B':1}
+        'B':{}
+      }
+
+    test 'set#add C', ->
+      ds.add knet.find_by('C')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1}
+        'B':{}
+        'C':{}
+      }
+
+    test 'set#add D', ->
+      ds.add knet.find_by('D')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1, 'D':2}
+        'B':{'D':1}
+        'C':{}
+        'D':{}
+      }
+
+    test 'set#add F', ->
+      ds.add knet.find_by('F')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1, 'D':2, 'F':2}
+        'B':{'D':1}
+        'C':{'F':1}
+        'D':{}
+        'F':{}
+      }
+
+    test 'set#add E', ->
+      ds.add knet.find_by('E')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3}
+        'B':{'D':1, 'E':2}
+        'C':{'F':1, 'E':2}
+        'D':{'E':1}
+        'F':{'E':1}
+        'E':{}
+      }
+      deepEqual ds.redundant_edges, [
+        ['B', 'E']
+      ]
+
+    test 'set#add G', ->
+      ds.add knet.find_by('G')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3, 'G':4}
+        'B':{'D':1, 'E':2, 'G':3}
+        'C':{'F':1, 'E':2, 'G':3}
+        'D':{'E':1, 'G':2}
+        'F':{'E':1, 'G':2}
+        'E':{'G':1}
+        'G':{}
+      }
+      deepEqual ds.redundant_edges, [
+        ['B', 'E']
+      ]
+
+    test 'set#add H', ->
+      ds.add knet.find_by('H')
+      deepEqual ds.set, {
+        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3, 'G':4, 'H':5}
+        'B':{'D':1, 'E':2, 'G':3, 'H':4}
+        'C':{'F':1, 'E':2, 'G':3, 'H':4}
+        'D':{'E':1, 'G':2, 'H':3}
+        'F':{'E':1, 'G':2, 'H':3}
+        'E':{'G':1, 'H':2}
+        'G':{'H':1}
+        'H':{}
+      }
+      deepEqual ds.redundant_edges.sort(), [
+        ['B', 'E'], ['D', 'H'], ['F', 'H']
+      ]
+  )()
+
+  # test '环路检查'
