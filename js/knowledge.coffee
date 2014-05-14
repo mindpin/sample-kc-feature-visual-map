@@ -1,7 +1,7 @@
 class KnowledgeNet
   constructor: (json_obj)->
-    @_raw_points = json_obj['knowledge_points']
-    @_raw_edges = json_obj['links']
+    @_raw_points = json_obj['points']
+    @_raw_edges = json_obj['edges']
 
     @_build()
 
@@ -15,8 +15,8 @@ class KnowledgeNet
       @_points_map[p.id]['children'] = []
 
     for e in @_raw_edges
-      parent_id = e['parent_id']
-      child_id = e['child_id']
+      parent_id = e['parent']
+      child_id = e['child']
 
       @_points_map[parent_id]['edges'].push [parent_id, child_id]
       @_points_map[parent_id]['children'].push child_id

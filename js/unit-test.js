@@ -20,8 +20,8 @@
   do_test = function(json_obj) {
     test('JSON Object 检查', function() {
       console.log(json_obj);
-      ok(json_obj['knowledge_points'].length === 8);
-      return ok(json_obj['links'].length === 11);
+      ok(json_obj['points'].length === 8);
+      return ok(json_obj['edges'].length === 11);
     });
     return (function() {
       var knet;

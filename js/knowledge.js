@@ -4,8 +4,8 @@
 
   KnowledgeNet = (function() {
     function KnowledgeNet(json_obj) {
-      this._raw_points = json_obj['knowledge_points'];
-      this._raw_edges = json_obj['links'];
+      this._raw_points = json_obj['points'];
+      this._raw_edges = json_obj['edges'];
       this._build();
     }
 
@@ -24,8 +24,8 @@
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         e = _ref1[_j];
-        parent_id = e['parent_id'];
-        child_id = e['child_id'];
+        parent_id = e['parent'];
+        child_id = e['child'];
         this._points_map[parent_id]['edges'].push([parent_id, child_id]);
         this._points_map[parent_id]['children'].push(child_id);
         this._points_map[child_id]['edges'].push([parent_id, child_id]);
