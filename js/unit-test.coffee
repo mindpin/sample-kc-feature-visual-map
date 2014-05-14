@@ -107,15 +107,37 @@ do_test = (g1_obj, g2_obj, g3_obj)->
       knet1.clean_redundant_edges()
       equal knet1.edges().length, c - 3 
 
+      deepEqual knet1.find_by('B').children, ['D']
+      deepEqual knet1.find_by('E').parents, ['D', 'F']
+
     test '剔除多余边-G2', ->
       c = knet2.edges().length
       knet2.clean_redundant_edges()
       equal knet2.edges().length, c 
 
     test '剔除多余边-G3', ->
+      deepEqual knet3.find_by('C').edges, [
+        ['A', 'C'],
+        ['B', 'C'], 
+        ['C', 'D'],
+        ['C', 'F']
+      ]
+
       c = knet3.edges().length
       knet3.clean_redundant_edges()
       equal knet3.edges().length, c - 4 
+
+      deepEqual knet3.find_by('A').children, ['B']
+      deepEqual knet3.find_by('A').edges, [['A', 'B']]
+
+      deepEqual knet3.find_by('B').children, ['C']
+      deepEqual knet3.find_by('B').edges, [['A', 'B'], ['B', 'C']]
+
+      deepEqual knet3.find_by('C').children, ['D']
+      deepEqual knet3.find_by('C').edges, [['B', 'C'], ['C', 'D']]
+
+      deepEqual knet3.find_by('D').children, ['E']
+      deepEqual knet3.find_by('E').children, ['F']
   )()
 
   (->

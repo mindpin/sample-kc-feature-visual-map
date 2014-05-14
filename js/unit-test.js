@@ -117,7 +117,9 @@
         var c;
         c = knet1.edges().length;
         knet1.clean_redundant_edges();
-        return equal(knet1.edges().length, c - 3);
+        equal(knet1.edges().length, c - 3);
+        deepEqual(knet1.find_by('B').children, ['D']);
+        return deepEqual(knet1.find_by('E').parents, ['D', 'F']);
       });
       test('剔除多余边-G2', function() {
         var c;
@@ -127,9 +129,18 @@
       });
       return test('剔除多余边-G3', function() {
         var c;
+        deepEqual(knet3.find_by('C').edges, [['A', 'C'], ['B', 'C'], ['C', 'D'], ['C', 'F']]);
         c = knet3.edges().length;
         knet3.clean_redundant_edges();
-        return equal(knet3.edges().length, c - 4);
+        equal(knet3.edges().length, c - 4);
+        deepEqual(knet3.find_by('A').children, ['B']);
+        deepEqual(knet3.find_by('A').edges, [['A', 'B']]);
+        deepEqual(knet3.find_by('B').children, ['C']);
+        deepEqual(knet3.find_by('B').edges, [['A', 'B'], ['B', 'C']]);
+        deepEqual(knet3.find_by('C').children, ['D']);
+        deepEqual(knet3.find_by('C').edges, [['B', 'C'], ['C', 'D']]);
+        deepEqual(knet3.find_by('D').children, ['E']);
+        return deepEqual(knet3.find_by('E').children, ['F']);
       });
     })();
     (function() {

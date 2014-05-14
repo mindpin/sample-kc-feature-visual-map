@@ -1,8 +1,5 @@
-class KNPoint
-  constructor: (@id, @name)->
-    @edges = []
-    @parents = []
-    @children = []
+edge_equal = (e1, e2)->
+  return e1[0] == e2[0] && e1[1] == e2[1]
 
 class KnowledgeNet
   constructor: (json_obj)->
@@ -10,7 +7,13 @@ class KnowledgeNet
     @_edges = []
 
     for p in json_obj['points']
-      @_points_map[p.id] = new KNPoint(p.id, p.name)
+      @_points_map[p.id] = {
+        id: p.id
+        name: p.name
+        edges: []
+        parents: []
+        children: []
+      }
 
     for e in json_obj['edges']
       parent_id = e['parent']
@@ -28,6 +31,10 @@ class KnowledgeNet
       child.parents.push parent_id
 
 
+  find_by: (id)->
+    @_points_map[id]
+
+
   points: ->
     if !@_points
       @_points = []
@@ -40,17 +47,11 @@ class KnowledgeNet
     @_edges
 
 
-  find_by: (id)->
-    @_points_map[id]
-
-
   roots: ->
     if !@_roots
       @_roots = []
       for id of @_points_map
-        p = @find_by(id)
-        if p.parents.length == 0
-          @_roots.push p
+        @_roots.push id if @is_root(id)
     @_roots
 
 
@@ -63,13 +64,11 @@ class KnowledgeNet
 
   get_redundant_edges: ->
     _set = new DistanceSet(@)
-    _arr = @roots().map (p)->
-      p.id
+    _arr = @roots().map (root_id)-> root_id
 
     # 宽度优先遍历
     while _arr.length > 0
       point = @find_by _arr.shift()
-
       _set.add point
       
       for child_id in point.children
@@ -89,27 +88,27 @@ class KnowledgeNet
   # edge like ['A', 'B']
   clean_edge: (edge)->
     parent_id = edge[0]
-    child_id = edge[1]
+    child_id  = edge[1]
+    parent    = @find_by parent_id
+    child     = @find_by child_id
 
-    # 从父节点移除子
-    parent = @find_by parent_id
+    # 从父节点移除子，以及移除相应的边
     parent.children = parent.children.filter (id)->
       id != child_id
 
     parent.edges = parent.edges.filter (e)->
-      !(e[0] == edge[0] && e[1] == edge[1])
+      !edge_equal(e, edge)
 
-    # 从子节点移除父
-    child = @find_by child_id
+    # 从子节点移除父，以及移除相应的边
     child.parents = child.parents.filter (id)->
       id != parent_id
 
     child.edges = child.edges.filter (e)->
-      !(e[0] == edge[0] && e[1] == edge[1])
+      !edge_equal(e, edge)
 
     # 移除边
     @_edges = @_edges.filter (e)->
-      !(e[0] == edge[0] && e[1] == edge[1])
+      !edge_equal(e, edge)
 
 # SET = {}
 # RE = {}
@@ -137,7 +136,6 @@ class DistanceSet
   _r: (current_point, point, distance)->
     for parent_id in current_point.parents
       @_merge parent_id, point.id, distance
-
       @_r @net.find_by(parent_id), point, distance + 1
 
   _merge: (target_id, point_id, distance)->
