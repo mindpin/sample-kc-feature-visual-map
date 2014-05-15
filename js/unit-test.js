@@ -19,7 +19,7 @@
 
   jQuery(function() {
     load_json(FIXTRUE_GRAPH_JSON_URL, function(obj) {
-      return do_test(obj['G1'], obj['G2'], obj['G3']);
+      return do_test(obj['G1'], obj['G2'], obj['G3'], obj['G4']);
     });
     return load_json(DATA_JS_JSON_URL, function(obj) {
       var js_net;
@@ -32,7 +32,7 @@
     });
   });
 
-  do_test = function(g1_obj, g2_obj, g3_obj) {
+  do_test = function(g1_obj, g2_obj, g3_obj, g4_obj) {
     test('JSON Object 检查', function() {
       ok(g1_obj['points'].length === 8);
       return ok(g1_obj['edges'].length === 11);
@@ -187,7 +187,7 @@
         return ok(!ds.is_parents_here(p2));
       });
     })();
-    return (function() {
+    (function() {
       var ds, knet;
       knet = new KnowledgeNet(g1_obj);
       ds = new KnowledgeNet.DistanceSet(knet);
@@ -359,6 +359,79 @@
           'H': {}
         });
         return deepEqual(ds.redundant_edges.sort(), [['B', 'E'], ['D', 'H'], ['F', 'H']]);
+      });
+    })();
+    (function() {
+      var knet1, knet2, knet3, knet4;
+      knet1 = new KnowledgeNet(g1_obj);
+      knet2 = new KnowledgeNet(g2_obj);
+      knet3 = new KnowledgeNet(g3_obj);
+      knet4 = new KnowledgeNet(g4_obj);
+      test('g1 deeps', function() {
+        return deepEqual(knet1.get_deeps(), {
+          'A': 1,
+          'B': 2,
+          'C': 2,
+          'D': 3,
+          'F': 3,
+          'E': 4,
+          'G': 5,
+          'H': 6
+        });
+      });
+      test('g2 deeps', function() {
+        return deepEqual(knet2.get_deeps(), {
+          'I': 1,
+          'J': 1,
+          'K': 2,
+          'L': 3,
+          'M': 3,
+          'N': 4,
+          'O': 1,
+          'P': 2
+        });
+      });
+      test('g3 deeps', function() {
+        return deepEqual(knet3.get_deeps(), {
+          'A': 1,
+          'B': 2,
+          'C': 3,
+          'D': 4,
+          'E': 5,
+          'F': 6
+        });
+      });
+      return test('g4 deeps', function() {
+        return deepEqual(knet4.get_deeps(), {
+          'A': 1,
+          'B': 2,
+          'D': 2,
+          'C': 3,
+          'E': 4,
+          'F': 5,
+          'G': 1
+        });
+      });
+    })();
+    return (function() {
+      var knet1, knet2, knet3, knet4;
+      knet1 = new KnowledgeNet(g1_obj);
+      knet2 = new KnowledgeNet(g2_obj);
+      knet3 = new KnowledgeNet(g3_obj);
+      knet4 = new KnowledgeNet(g4_obj);
+      test('g4 nodes count', function() {
+        return equal(knet4.points().length, 7);
+      });
+      test('get g4 TREE', function() {
+        var tree_data;
+        tree_data = knet4.get_tree_data();
+        deepEqual(tree_data['points'].sort(), ['A', 'B', 'C', 'D', 'E', 'F', 'G']);
+        return deepEqual(tree_data['edges'].sort(), [['A', 'B'], ['A', 'D'], ['B', 'C'], ['C', 'E'], ['E', 'F']]);
+      });
+      return test('get g1 TREE', function() {
+        var tree_data;
+        tree_data = knet1.get_tree_data();
+        return deepEqual(tree_data['edges'].sort(), [['A', 'B'], ['A', 'C'], ['B', 'D'], ['C', 'F'], ['E', 'G'], ['F', 'E'], ['G', 'H']]);
       });
     })();
   };

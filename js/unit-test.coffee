@@ -11,7 +11,7 @@ load_json = (url, func)->
 
 jQuery ->
   load_json FIXTRUE_GRAPH_JSON_URL, (obj)->
-    do_test obj['G1'], obj['G2'], obj['G3']
+    do_test obj['G1'], obj['G2'], obj['G3'], obj['G4']
 
   load_json DATA_JS_JSON_URL, (obj)->
     js_net = new KnowledgeNet(obj)
@@ -22,11 +22,12 @@ jQuery ->
         ['n16', 'n89']
       ]
 
-do_test = (g1_obj, g2_obj, g3_obj)->
+do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
   test 'JSON Object 检查', ->
     ok g1_obj['points'].length == 8
     ok g1_obj['edges'].length == 11
 
+  # 数据，属性
   (->
     knet = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
@@ -78,9 +79,9 @@ do_test = (g1_obj, g2_obj, g3_obj)->
       ok knet2.is_root 'J'
       ok knet2.is_root 'O'
       ok !knet2.is_root 'P'
-
   )()
 
+  # 多余边查找算法
   (->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
@@ -140,6 +141,7 @@ do_test = (g1_obj, g2_obj, g3_obj)->
       deepEqual knet3.find_by('E').children, ['F']
   )()
 
+  # 多余边查找算法用到的函数
   (->
     knet = new KnowledgeNet(g1_obj)
     ds = new KnowledgeNet.DistanceSet knet
@@ -169,6 +171,7 @@ do_test = (g1_obj, g2_obj, g3_obj)->
       ok !ds.is_parents_here p2
   )()
 
+  # 多余边查找算法用到的函数
   (->
     knet = new KnowledgeNet(g1_obj)
     ds = new KnowledgeNet.DistanceSet knet
@@ -256,6 +259,80 @@ do_test = (g1_obj, g2_obj, g3_obj)->
       }
       deepEqual ds.redundant_edges.sort(), [
         ['B', 'E'], ['D', 'H'], ['F', 'H']
+      ]
+  )()
+
+  # 最优化节点深度
+  (->
+    knet1 = new KnowledgeNet(g1_obj)
+    knet2 = new KnowledgeNet(g2_obj)
+    knet3 = new KnowledgeNet(g3_obj)
+    knet4 = new KnowledgeNet(g4_obj)
+
+    test 'g1 deeps', ->
+      deepEqual knet1.get_deeps(), {
+        'A':1, 
+        'B':2, 'C':2
+        'D':3, 'F':3
+        'E':4
+        'G':5
+        'H':6
+      }
+
+    test 'g2 deeps', ->
+      deepEqual knet2.get_deeps(), {
+        'I':1, 'J':1 
+        'K':2,
+        'L':3, 'M':3
+        'N':4
+
+        'O':1
+        'P':2
+      }
+
+    test 'g3 deeps', ->
+      deepEqual knet3.get_deeps(), {
+        'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6
+      }
+
+    test 'g4 deeps', ->
+      deepEqual knet4.get_deeps(), {
+        'A':1, 
+        'B':2, 'D':2
+        'C':3, 
+        'E':4, 
+        'F':5
+        'G':1
+      }
+  )()
+
+  # 生成树构建算法
+  (->
+    knet1 = new KnowledgeNet(g1_obj)
+    knet2 = new KnowledgeNet(g2_obj)
+    knet3 = new KnowledgeNet(g3_obj)
+    knet4 = new KnowledgeNet(g4_obj)
+
+    test 'g4 nodes count', ->
+      equal knet4.points().length, 7
+
+    test 'get g4 TREE', ->
+      tree_data = knet4.get_tree_data()
+
+      deepEqual tree_data['points'].sort(), ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+      deepEqual tree_data['edges'].sort(), [
+        ['A', 'B'], ['A', 'D']
+        ['B', 'C'], ['C', 'E']
+        ['E', 'F'],
+      ]
+
+    test 'get g1 TREE', ->
+      tree_data = knet1.get_tree_data()
+      deepEqual tree_data['edges'].sort(), [
+        ['A', 'B'], ['A', 'C']
+        ['B', 'D'], ['C', 'F']
+        ['E', 'G'], ['F', 'E'], # ['D', 'E'] // 生成方式不唯一
+        ['G', 'H']
       ]
   )()
 

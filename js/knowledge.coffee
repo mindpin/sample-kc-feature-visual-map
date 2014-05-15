@@ -6,6 +6,9 @@ class KnowledgeNet
     @_points_map = {}
     @_edges = []
 
+    # 是否已清理多余边
+    @cleaned = false
+
     for p in json_obj['points']
       @_points_map[p.id] = {
         id: p.id
@@ -39,7 +42,7 @@ class KnowledgeNet
     if !@_points
       @_points = []
       for id of @_points_map
-        @_points.push @find_by(id)
+        @_points.push id
     @_points
 
 
@@ -78,12 +81,17 @@ class KnowledgeNet
 
       # console.log point.id, _arr
 
+    @deeps = _set.deeps
+
     return _set.redundant_edges
 
 
   clean_redundant_edges: ->
+    return if @cleaned
+
     for edge in @get_redundant_edges()
       @clean_edge edge
+    @cleaned = true
 
   # edge like ['A', 'B']
   clean_edge: (edge)->
@@ -110,6 +118,37 @@ class KnowledgeNet
     @_edges = @_edges.filter (e)->
       !edge_equal(e, edge)
 
+  get_deeps: ->
+    @clean_redundant_edges()
+    @deeps
+
+  get_tree_data: ->
+    @clean_redundant_edges()
+
+    # deeps 排序
+    arr = []
+    for id of @deeps
+      arr.push [@deeps[id], id]
+
+    arr = arr.sort().map (item)->
+      item[1]
+
+    # 添加边
+    stack = []
+    edges = []
+    for id in arr
+      point = @find_by id
+      for pid in stack
+        if pid in point.parents
+          edges.push [pid, id]
+          break
+      stack.unshift id
+
+    return {
+      'points': arr
+      'edges': edges
+    }
+
 # SET = {}
 # RE = {}
 # 宽度优先遍历节点
@@ -123,6 +162,7 @@ class DistanceSet
   constructor: (@net)->
     @set = {}
     @redundant_edges = []
+    @deeps = {}
 
   is_parents_here: (point)->
     for parent_id in point.parents
@@ -131,12 +171,16 @@ class DistanceSet
 
   add: (point)->
     @set[point.id] = {}
-    @_r(point, point, 1)
+    deep = @_r(point, point, 1)
+    @deeps[point.id] = deep
 
   _r: (current_point, point, distance)->
+    deep = 1
     for parent_id in current_point.parents
       @_merge parent_id, point.id, distance
-      @_r @net.find_by(parent_id), point, distance + 1
+      d = @_r @net.find_by(parent_id), point, distance + 1
+      deep = Math.max(deep, @deeps[parent_id] + 1)
+    return deep
 
   _merge: (target_id, point_id, distance)->
     d0 = @set[target_id][point_id]
