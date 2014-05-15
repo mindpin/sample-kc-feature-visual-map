@@ -334,6 +334,10 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
         ['E', 'G'], ['F', 'E'], # ['D', 'E'] // 生成方式不唯一
         ['G', 'H']
       ]
+
+    test 'get g1 NEST TREE', ->
+      tree_data = knet1.get_tree_nesting_data()
+      deepEqual tree_data[0].id, 'A'
   )()
 
   # test '环路检查'

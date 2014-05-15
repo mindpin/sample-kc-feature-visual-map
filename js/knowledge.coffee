@@ -125,13 +125,7 @@ class KnowledgeNet
   get_tree_data: ->
     @clean_redundant_edges()
 
-    # deeps 排序
-    arr = []
-    for id of @deeps
-      arr.push [@deeps[id], id]
-
-    arr = arr.sort().map (item)->
-      item[1]
+    arr = @__deeps_arr()
 
     # 添加边
     stack = []
@@ -148,6 +142,40 @@ class KnowledgeNet
       'points': arr
       'edges': edges
     }
+
+  get_tree_nesting_data: ->
+    @clean_redundant_edges()
+
+    arr = @__deeps_arr()
+
+    map = {}
+    for id in arr
+      point = @find_by id
+      map[id] = {
+        id: point.id
+        name: point.name
+        children: []
+      }
+
+    stack = []
+    for id in arr
+      point = @find_by id
+      for pid in stack
+        if pid in point.parents
+          map[pid].children.push map[id]
+          break
+      stack.unshift id
+
+    return @roots().map (id)->
+      map[id]
+
+  __deeps_arr: ->
+    # deeps 排序数组
+    arr = []
+    for id of @deeps
+      arr.push [@deeps[id], id]
+
+    return arr.sort().map (item)-> item[1]
 
 # SET = {}
 # RE = {}
@@ -197,3 +225,101 @@ class DistanceSet
 
 KnowledgeNet.DistanceSet = DistanceSet
 window.KnowledgeNet = KnowledgeNet
+
+
+jQuery ->
+  if jQuery('body').hasClass('sample')
+    jQuery.ajax
+      url: 'data/js/js.json'
+      # url: 'fixture/graph.json'
+      type: 'GET'
+      dataType: 'json'
+      success: (obj)->
+        graph = new Graph
+        graph.draw(obj)
+
+class Graph
+  constructor: ->
+    # nothing
+
+  draw: (obj)->
+    @knet = new KnowledgeNet obj
+
+    @_draw_svg()
+    @_draw_tree()
+
+  _draw_svg: ->
+    @screen_w = 16000
+    @screen_h = 8000
+
+    @svg = d3.select('body')
+      .append('svg')
+      .attr('width', @screen_w)
+      .attr('height', @screen_h)
+      .append('g')
+      .attr 'transform', 'translate(840 , 0)'
+
+  _draw_tree: ->
+    tree_data = @knet.get_tree_nesting_data()
+
+    obj = {
+      name:'ROOT'
+      children: tree_data
+    }
+
+    # ------------
+    # D3
+
+    tree = d3.layout.tree()
+      # .size [@screen_w * 3, @screen_h * 3]
+      .nodeSize [100, 120]
+      .separation (a, b)->
+        if a.parent == b.parent then 1 else 2;
+
+    diagonal = d3.svg.diagonal()
+      .projection (d)->
+        [d.x, d.y]
+
+    nodes = tree.nodes obj
+    links = tree.links nodes
+
+    console.log links
+
+    node_enter = @svg.selectAll('.node')
+      .data nodes
+      .enter()
+      .append 'g'
+      .attr 'class', 'node'
+      .attr 'transform', (d)->
+        "translate(#{d.x}, #{d.y})"
+
+    node_enter.append 'circle'
+      .attr 'r', 20
+      .style 'fill', '#fff'
+      .style 'stroke', '#2A70E8'
+      .style 'stroke-width', '3px'
+      .style 'display', (d)->
+        if d.name == 'ROOT' then 'none'
+
+    node_enter.append 'text'
+      .attr 'y', 40
+      .attr 'text-anchor', 'middle'
+      .text (d)-> d.name
+      .style 'font-family', 'arial, 微软雅黑'
+      .style 'font-size', '14px'
+      .style 'font-weight', 'bold'
+      .style 'fill', '#444'
+      .style 'display', (d)->
+        if d.name == 'ROOT' then 'none'
+
+    @svg.selectAll('.link')
+      .data links
+      .enter()
+      .insert 'path', 'g'
+      .attr 'class', 'link'
+      .attr 'd', diagonal
+      .style 'fill', 'none'
+      .style 'stroke', '#ccc'
+      .style 'stroke-width', '2px'
+      .style 'display', (d)->
+        if d.source.name == 'ROOT' then 'none'

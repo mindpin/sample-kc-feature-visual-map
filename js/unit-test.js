@@ -428,10 +428,15 @@
         deepEqual(tree_data['points'].sort(), ['A', 'B', 'C', 'D', 'E', 'F', 'G']);
         return deepEqual(tree_data['edges'].sort(), [['A', 'B'], ['A', 'D'], ['B', 'C'], ['C', 'E'], ['E', 'F']]);
       });
-      return test('get g1 TREE', function() {
+      test('get g1 TREE', function() {
         var tree_data;
         tree_data = knet1.get_tree_data();
         return deepEqual(tree_data['edges'].sort(), [['A', 'B'], ['A', 'C'], ['B', 'D'], ['C', 'F'], ['E', 'G'], ['F', 'E'], ['G', 'H']]);
+      });
+      return test('get g1 NEST TREE', function() {
+        var tree_data;
+        tree_data = knet1.get_tree_nesting_data();
+        return deepEqual(tree_data[0].id, 'A');
       });
     })();
   };
