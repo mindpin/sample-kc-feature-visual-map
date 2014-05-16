@@ -1,3 +1,6 @@
 [submodule "data"]
 	path = data
 	url = git@github.com:mindpin/sample-data-knowledge-points.git
+[submodule "lily"]
+	path = lily
+	url = git@github.com:mindpin/lily.git

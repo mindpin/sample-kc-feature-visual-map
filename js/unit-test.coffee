@@ -28,7 +28,7 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
     ok g1_obj['edges'].length == 11
 
   # 数据，属性
-  (->
+  do ->
     knet = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
 
@@ -36,7 +36,7 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
       ok knet.points().length == 8
       ok knet.edges().length == 11
 
-    (->
+    do ->
       n = knet.find_by('A')
       ne = knet.find_by('E')
       
@@ -65,7 +65,6 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
 
         equal ne.children.length, 1
         deepEqual ne.children, ['G']
-    )()
 
     test '查找根节点-G1', ->
       roots = knet.roots()
@@ -79,10 +78,9 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
       ok knet2.is_root 'J'
       ok knet2.is_root 'O'
       ok !knet2.is_root 'P'
-  )()
 
   # 多余边查找算法
-  (->
+  do ->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
@@ -139,10 +137,9 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
 
       deepEqual knet3.find_by('D').children, ['E']
       deepEqual knet3.find_by('E').children, ['F']
-  )()
 
   # 多余边查找算法用到的函数
-  (->
+  do ->
     knet = new KnowledgeNet(g1_obj)
     ds = new KnowledgeNet.DistanceSet knet
 
@@ -169,10 +166,9 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
       p2 = {id:'E', parents:['C', 'D']}
       ok ds.is_parents_here p1
       ok !ds.is_parents_here p2
-  )()
 
   # 多余边查找算法用到的函数
-  (->
+  do ->
     knet = new KnowledgeNet(g1_obj)
     ds = new KnowledgeNet.DistanceSet knet
 
@@ -260,10 +256,9 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
       deepEqual ds.redundant_edges.sort(), [
         ['B', 'E'], ['D', 'H'], ['F', 'H']
       ]
-  )()
 
   # 最优化节点深度
-  (->
+  do ->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
@@ -304,10 +299,9 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
         'F':5
         'G':1
       }
-  )()
 
   # 生成树构建算法
-  (->
+  do ->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
@@ -338,6 +332,5 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
     test 'get g1 NEST TREE', ->
       tree_data = knet1.get_tree_nesting_data()
       deepEqual tree_data[0].id, 'A'
-  )()
 
   # test '环路检查'

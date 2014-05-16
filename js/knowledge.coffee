@@ -1,5 +1,5 @@
 edge_equal = (e1, e2)->
-  return e1[0] == e2[0] && e1[1] == e2[1]
+  e1[0] == e2[0] and e1[1] == e2[1]
 
 class KnowledgeNet
   constructor: (json_obj)->
@@ -10,13 +10,12 @@ class KnowledgeNet
     @cleaned = false
 
     for p in json_obj['points']
-      @_points_map[p.id] = {
+      @_points_map[p.id] =
         id: p.id
         name: p.name
         edges: []
         parents: []
         children: []
-      }
 
     for e in json_obj['edges']
       parent_id = e['parent']
@@ -27,11 +26,11 @@ class KnowledgeNet
       parent = @find_by parent_id
       child = @find_by child_id
 
-      parent.edges.push [parent_id, child_id]
-      parent.children.push child_id
+      parent['edges'].push [parent_id, child_id]
+      parent['children'].push child_id
 
-      child.edges.push [parent_id, child_id]
-      child.parents.push parent_id
+      child['edges'].push [parent_id, child_id]
+      child['parents'].push parent_id
 
 
   find_by: (id)->
@@ -39,11 +38,7 @@ class KnowledgeNet
 
 
   points: ->
-    if !@_points
-      @_points = []
-      for id of @_points_map
-        @_points.push id
-    @_points
+    @_points ?= (id for id of @_points_map)
 
 
   edges: ->
@@ -51,23 +46,16 @@ class KnowledgeNet
 
 
   roots: ->
-    if !@_roots
-      @_roots = []
-      for id of @_points_map
-        @_roots.push id if @is_root(id)
-    @_roots
+    @_roots ?= (id for id of @_points_map when @is_root id)
 
 
   is_root: (id)->
-    p = @find_by(id)
-    if p.parents.length == 0
-      return true
-    return false
+    @find_by(id).parents.length is 0
 
 
   get_redundant_edges: ->
     _set = new DistanceSet(@)
-    _arr = @roots().map (root_id)-> root_id
+    _arr = (id for id in @roots())
 
     # 宽度优先遍历
     while _arr.length > 0
@@ -76,47 +64,41 @@ class KnowledgeNet
       
       for child_id in point.children
         child = @find_by child_id
-        if _set.is_parents_here child
-          _arr.push child_id
-
-      # console.log point.id, _arr
-
+        _arr.push child_id if _set.is_parents_here child
+          
     @deeps = _set.deeps
 
     return _set.redundant_edges
 
 
   clean_redundant_edges: ->
-    return if @cleaned
-
-    for edge in @get_redundant_edges()
-      @clean_edge edge
-    @cleaned = true
+    unless @cleaned
+      @clean_edge edge for edge in @get_redundant_edges()
+      @cleaned = true
 
   # edge like ['A', 'B']
   clean_edge: (edge)->
-    parent_id = edge[0]
-    child_id  = edge[1]
-    parent    = @find_by parent_id
-    child     = @find_by child_id
+    [parent_id, child_id] = edge
+    parent = @find_by parent_id
+    child  = @find_by child_id
 
     # 从父节点移除子，以及移除相应的边
     parent.children = parent.children.filter (id)->
-      id != child_id
+      id isnt child_id
 
     parent.edges = parent.edges.filter (e)->
-      !edge_equal(e, edge)
+      not edge_equal(e, edge)
 
     # 从子节点移除父，以及移除相应的边
     child.parents = child.parents.filter (id)->
-      id != parent_id
+      id isnt parent_id
 
     child.edges = child.edges.filter (e)->
-      !edge_equal(e, edge)
+      not edge_equal(e, edge)
 
     # 移除边
     @_edges = @_edges.filter (e)->
-      !edge_equal(e, edge)
+      not edge_equal(e, edge)
 
   get_deeps: ->
     @clean_redundant_edges()
@@ -143,6 +125,7 @@ class KnowledgeNet
       'edges': edges
     }
 
+
   get_tree_nesting_data: ->
     @clean_redundant_edges()
 
@@ -151,11 +134,10 @@ class KnowledgeNet
     map = {}
     for id in arr
       point = @find_by id
-      map[id] = {
+      map[id] =
         id: point.id
         name: point.name
         children: []
-      }
 
     stack = []
     for id in arr
@@ -166,16 +148,23 @@ class KnowledgeNet
           break
       stack.unshift id
 
-    return @roots().map (id)->
-      map[id]
+    re = (map[id] for id in @roots())
+
+    @__count(p) for p in re
+
+    return re.sort (a, b)-> b.count - a.count
+
+  __count: (point)->
+    point.count = 1
+    for child in point.children
+      point.count += @__count(child)
+    point.count
 
   __deeps_arr: ->
     # deeps 排序数组
-    arr = []
-    for id of @deeps
-      arr.push [@deeps[id], id]
-
-    return arr.sort().map (item)-> item[1]
+    ([@deeps[id], id] for id of @deeps)
+      .sort()
+      .map (item)-> item[1]
 
 # SET = {}
 # RE = {}
@@ -252,15 +241,48 @@ class Graph
     @screen_w = 16000
     @screen_h = 8000
 
-    @svg = d3.select('body')
-      .append('svg')
-      .attr('width', @screen_w)
-      .attr('height', @screen_h)
-      .append('g')
-      .attr 'transform', 'translate(840 , 0)'
+    @svg = d3.select('.graph-paper').append('svg')
+        .attr('width', @screen_w)
+        .attr('height', @screen_h)
+
+    zoom_behavior = d3.behavior.zoom()
+      .scaleExtent([0.25, 2])
+      .on("zoom", @_zoom)
+
+    @g1 = @svg.append('g')
+        .call zoom_behavior
+    
+    @g2 = @svg.append('g')
+      # .attr 'transform', "translate(2300, 0)"
+
+    @g1.append "rect"
+      .attr "class", "overlay"
+      .attr 'width', @screen_w
+      .attr 'height', @screen_h
+      .style 'fill', 'none'
+      .style 'pointer-events', 'all'
+
+
+  _zoom: =>
+    scale = d3.event.scale
+    if scale < 0.8
+      @text.style 'display', 'none'
+    else
+      @text.style 'display', ''
+
+    translate = d3.event.translate
+
+    # off = 0
+
+
+
+    @g2.attr 'transform', "translate(#{translate[0] + off}, #{translate[1]})scale(#{scale})"
+
 
   _draw_tree: ->
     tree_data = @knet.get_tree_nesting_data()
+
+    console.log tree_data
 
     obj = {
       name:'ROOT'
@@ -272,7 +294,7 @@ class Graph
 
     tree = d3.layout.tree()
       # .size [@screen_w * 3, @screen_h * 3]
-      .nodeSize [100, 120]
+      .nodeSize [80, 100]
       .separation (a, b)->
         if a.parent == b.parent then 1 else 2;
 
@@ -283,9 +305,7 @@ class Graph
     nodes = tree.nodes obj
     links = tree.links nodes
 
-    console.log links
-
-    node_enter = @svg.selectAll('.node')
+    node_enter = @g2.selectAll('.node')
       .data nodes
       .enter()
       .append 'g'
@@ -294,32 +314,32 @@ class Graph
         "translate(#{d.x}, #{d.y})"
 
     node_enter.append 'circle'
-      .attr 'r', 20
-      .style 'fill', '#fff'
-      .style 'stroke', '#2A70E8'
-      .style 'stroke-width', '3px'
+      .attr 'r', 15
+      .style 'fill', '#232B2D'
+      .style 'stroke', '#65B2EF'
+      .style 'stroke-width', 5
       .style 'display', (d)->
         if d.name == 'ROOT' then 'none'
 
-    node_enter.append 'text'
-      .attr 'y', 40
+    @text = node_enter.append 'text'
+      .attr 'dy', 45
       .attr 'text-anchor', 'middle'
       .text (d)-> d.name
       .style 'font-family', 'arial, 微软雅黑'
       .style 'font-size', '14px'
-      .style 'font-weight', 'bold'
-      .style 'fill', '#444'
+      # .style 'font-weight', 'bold'
+      .style 'fill', '#fff'
       .style 'display', (d)->
         if d.name == 'ROOT' then 'none'
 
-    @svg.selectAll('.link')
+    @g2.selectAll('.link')
       .data links
       .enter()
       .insert 'path', 'g'
       .attr 'class', 'link'
       .attr 'd', diagonal
       .style 'fill', 'none'
-      .style 'stroke', '#ccc'
-      .style 'stroke-width', '2px'
+      .style 'stroke', '#6F7B7E'
+      .style 'stroke-width', '3px'
       .style 'display', (d)->
         if d.source.name == 'ROOT' then 'none'

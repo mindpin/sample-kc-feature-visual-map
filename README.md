@@ -7,7 +7,7 @@ KnowledgeCamp 产品 SAMPLE-1 用于展示可视化知识网络图的绘制
 
 ```
 scss --watch .
-coffee --watch --compile */*.coffee
+coffee --watch --compile --map */*.coffee
 ruby watch_haml.rb .
 ```
 
