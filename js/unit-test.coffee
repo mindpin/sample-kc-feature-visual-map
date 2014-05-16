@@ -1,19 +1,11 @@
 FIXTRUE_GRAPH_JSON_URL = 'fixture/graph.json'
 DATA_JS_JSON_URL = 'data/js/js.json'
 
-load_json = (url, func)->
-  jQuery.ajax
-    url: url
-    type: 'GET'
-    dataType: 'json'
-    success: (obj)->
-      func(obj)
-
 jQuery ->
-  load_json FIXTRUE_GRAPH_JSON_URL, (obj)->
+  jQuery.getJSON FIXTRUE_GRAPH_JSON_URL, (obj)->
     do_test obj['G1'], obj['G2'], obj['G3'], obj['G4']
 
-  load_json DATA_JS_JSON_URL, (obj)->
+  jQuery.getJSON DATA_JS_JSON_URL, (obj)->
     js_net = new KnowledgeNet(obj)
 
     test '查找多余边-JS', ->

@@ -37,3 +37,14 @@ body.sample {
 
 }
 
+svg.knsvg {
+  text {
+    cursor:default;
+    @include transition(all .1s ease-in);
+    @include unselectable;
+    &.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+}
