@@ -38,12 +38,54 @@ body.sample {
 }
 
 svg.knsvg {
-  text {
-    cursor:default;
-    @include transition(all .1s ease-in);
-    @include unselectable;
-    &.hide {
-      opacity: 0;
+  g.node {
+    text.name {
+      cursor:default;
+      font-size:14px;
+      fill:#fff;
+
+      @include transition(all .1s ease-in);
+      @include unselectable;
+
+      &.hide {
+        opacity: 0;
+        pointer-events: none;
+
+        @include -below(phone) {
+          opacity: 0.6;
+          pointer-events: all;
+        }
+      }
+
+      &.iroot {
+        pointer-events: none;
+        display: none;
+      }
+    }
+
+    circle {
+      fill: #232B2D;
+      stroke: #65B2EF;
+      stroke-width: 5px;
+
+      &.iroot {
+        display: none;
+        pointer-events: none;
+      }
+
+      &.start-point {
+        stroke: #FFB43B;
+      }
+    }
+  }
+
+  path.link {
+    fill: none;
+    stroke: #6F7B7E;
+    stroke-width: 3px;
+
+    &.iroot {
+      display: none;
       pointer-events: none;
     }
   }
