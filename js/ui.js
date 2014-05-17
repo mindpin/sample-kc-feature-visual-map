@@ -50,7 +50,7 @@
     KnowledgeNetGraph.prototype.__set_text_class = function(scale) {
       var klass;
       klass = ['name'];
-      if (scale < 0.8) {
+      if (scale < 0.7) {
         klass.push('hide');
       }
       return this.name_texts.attr('class', (function(_this) {
@@ -65,15 +65,15 @@
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
-      var first_node, imarginay_root, tree_data;
-      tree_data = this.knet.get_tree_nesting_data();
+      var first_node, imarginay_root;
+      this.tree_data = this.knet.get_tree_nesting_data();
       imarginay_root = {
         name: this.IMAGINARY_ROOT_NAME,
-        children: tree_data
+        children: this.tree_data.roots
       };
-      this.tree = d3.layout.tree().nodeSize([80, 120]);
+      this.tree = d3.layout.tree().nodeSize([80, 160]);
       this.nodes = this.tree.nodes(imarginay_root);
-      first_node = tree_data[0];
+      first_node = this.tree_data.roots[0];
       this.offset_x = -first_node.x + this.BASE_OFFSET_X;
       return this.graph.attr('transform', "translate(" + this.offset_x + ", 0)");
     };
@@ -104,7 +104,7 @@
 
     KnowledgeNetGraph.prototype._links = function() {
       var links;
-      links = this.tree.links(this.nodes);
+      links = this.tree_data.edges;
       return this.graph.selectAll('.link').data(links).enter().append('path').attr('d', d3.svg.diagonal()).attr('class', (function(_this) {
         return function(d) {
           if (d.source.name === _this.IMAGINARY_ROOT_NAME) {

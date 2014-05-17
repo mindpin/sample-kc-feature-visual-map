@@ -1,6 +1,7 @@
 jQuery ->
   if jQuery('body.sample').length
     jQuery.getJSON 'data/js/js.json', (data)->
+    # jQuery.getJSON 'fixture/graph.json', (data)->  
       new KnowledgeNetGraph jQuery('.graph-paper'), data
 
 class KnowledgeNetGraph
@@ -47,7 +48,7 @@ class KnowledgeNetGraph
 
   __set_text_class: (scale)->
     klass = ['name']
-    if scale < 0.8
+    if scale < 0.7
       klass.push 'hide'
 
     @name_texts
@@ -58,18 +59,18 @@ class KnowledgeNetGraph
           klass.join ' '
 
   _tree: ->
-    tree_data = @knet.get_tree_nesting_data()
+    @tree_data = @knet.get_tree_nesting_data()
 
     imarginay_root =
       name: @IMAGINARY_ROOT_NAME
-      children: tree_data
+      children: @tree_data.roots
 
     @tree = d3.layout.tree()
-      .nodeSize [80, 120]
+      .nodeSize [80, 160]
 
     @nodes = @tree.nodes imarginay_root
 
-    first_node = tree_data[0]
+    first_node = @tree_data.roots[0]
     @offset_x = - first_node.x + @BASE_OFFSET_X
     @graph.attr 'transform', "translate(#{@offset_x}, 0)"
 
@@ -98,7 +99,7 @@ class KnowledgeNetGraph
 
 
   _links: ->
-    links = @tree.links @nodes
+    links = @tree_data.edges
 
     @graph.selectAll('.link')
       .data links

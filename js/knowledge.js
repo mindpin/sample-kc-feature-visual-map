@@ -170,7 +170,7 @@
     };
 
     KnowledgeNet.prototype.get_tree_nesting_data = function() {
-      var arr, id, map, p, pid, point, re, stack, _i, _j, _k, _l, _len, _len1, _len2, _len3;
+      var arr, e, edges, id, map, pid, point, re, source, stack, target, _i, _j, _k, _len, _len1, _len2;
       this.clean_redundant_edges();
       arr = this.__deeps_arr();
       map = {};
@@ -180,7 +180,8 @@
         map[id] = {
           id: point.id,
           name: point.name,
-          children: []
+          children: [],
+          deep: this.deeps[id]
         };
       }
       stack = [];
@@ -202,28 +203,47 @@
         _results = [];
         for (_l = 0, _len3 = _ref.length; _l < _len3; _l++) {
           id = _ref[_l];
+          this.__count(map, id);
           _results.push(map[id]);
         }
         return _results;
       }).call(this);
-      for (_l = 0, _len3 = re.length; _l < _len3; _l++) {
-        p = re[_l];
-        this.__count(p);
-      }
-      return re.sort(function(a, b) {
-        return b.count - a.count;
-      });
+      edges = (function() {
+        var _l, _len3, _ref, _results;
+        _ref = this.edges();
+        _results = [];
+        for (_l = 0, _len3 = _ref.length; _l < _len3; _l++) {
+          e = _ref[_l];
+          source = map[e[0]];
+          target = map[e[1]];
+          _results.push({
+            "source": source,
+            "target": target
+          });
+        }
+        return _results;
+      }).call(this);
+      return {
+        "roots": re.sort(function(a, b) {
+          return b.count - a.count;
+        }),
+        "edges": edges
+      };
     };
 
-    KnowledgeNet.prototype.__count = function(point) {
-      var child, _i, _len, _ref;
-      point.count = 1;
-      _ref = point.children;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        child = _ref[_i];
-        point.count += this.__count(child);
+    KnowledgeNet.prototype.__count = function(map, pid) {
+      var child_id, map_point, o_point, _i, _len, _ref;
+      map_point = map[pid];
+      o_point = this.find_by(pid);
+      if (!map_point.count) {
+        map_point.count = 1;
+        _ref = o_point.children;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          child_id = _ref[_i];
+          map_point.count += this.__count(map, child_id);
+        }
       }
-      return point.count;
+      return map_point.count;
     };
 
     KnowledgeNet.prototype.__deeps_arr = function() {
@@ -235,7 +255,9 @@
           _results.push([this.deeps[id], id]);
         }
         return _results;
-      }).call(this)).sort().map(function(item) {
+      }).call(this)).sort(function(a, b) {
+        return a[0] - b[0];
+      }).map(function(item) {
         return item[1];
       });
     };

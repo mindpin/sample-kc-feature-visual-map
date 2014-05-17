@@ -402,7 +402,7 @@
         });
       });
     })();
-    return (function() {
+    (function() {
       var knet1, knet2, knet3, knet4;
       knet1 = new KnowledgeNet(g1_obj);
       knet2 = new KnowledgeNet(g2_obj);
@@ -425,7 +425,21 @@
       return test('get g1 NEST TREE', function() {
         var tree_data;
         tree_data = knet1.get_tree_nesting_data();
-        return deepEqual(tree_data[0].id, 'A');
+        return deepEqual(tree_data.roots[0].id, 'A');
+      });
+    })();
+    return (function() {
+      var knet1;
+      knet1 = new KnowledgeNet(g1_obj);
+      return test('BUGFIX: __deeps_arr', function() {
+        knet1.deeps = {
+          'A': 10,
+          'B': 17,
+          'C': 1,
+          'D': 2,
+          'E': 5
+        };
+        return deepEqual(knet1.__deeps_arr(), ['C', 'D', 'E', 'A', 'B']);
       });
     })();
   };

@@ -323,6 +323,22 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
 
     test 'get g1 NEST TREE', ->
       tree_data = knet1.get_tree_nesting_data()
-      deepEqual tree_data[0].id, 'A'
+      deepEqual tree_data.roots[0].id, 'A'
 
+  # bugfix __deeps_arr
+  do ->
+    knet1 = new KnowledgeNet(g1_obj)
+
+    test 'BUGFIX: __deeps_arr', ->
+      knet1.deeps =
+        'A': 10
+        'B': 17
+        'C': 1
+        'D': 2
+        'E': 5
+
+      deepEqual knet1.__deeps_arr(), [
+        'C', 'D', 'E', 'A', 'B'
+      ]
+  
   # test '环路检查'

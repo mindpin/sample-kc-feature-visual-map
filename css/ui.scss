@@ -48,7 +48,7 @@ svg.knsvg {
       font-size:14px;
       fill:#fff;
 
-      @include transition(all .1s ease-in);
+      // @include transition(all .1s ease-in);
       @include unselectable;
 
       &.hide {

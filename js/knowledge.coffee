@@ -134,36 +134,56 @@ class KnowledgeNet
     map = {}
     for id in arr
       point = @find_by id
+
       map[id] =
         id: point.id
         name: point.name
         children: []
+        deep: @deeps[id]
 
     stack = []
     for id in arr
       point = @find_by id
+
       for pid in stack
         if pid in point.parents
           map[pid].children.push map[id]
           break
       stack.unshift id
 
-    re = (map[id] for id in @roots())
+    re = for id in @roots()
+      @__count map, id
+      map[id]
 
-    @__count(p) for p in re
+    edges = for e in @edges()
+      source = map[e[0]]
+      target = map[e[1]]
+      {
+        "source": source
+        "target": target
+      }
 
-    return re.sort (a, b)-> b.count - a.count
+    return {
+      "roots": re.sort (a, b)-> b.count - a.count
+      "edges": edges
+    }
 
-  __count: (point)->
-    point.count = 1
-    for child in point.children
-      point.count += @__count(child)
-    point.count
+
+  __count: (map, pid)->
+    map_point = map[pid]
+    o_point = @find_by pid
+
+    if not map_point.count
+      map_point.count = 1
+      for child_id in o_point.children
+        map_point.count += @__count(map, child_id)
+
+    map_point.count
 
   __deeps_arr: ->
     # deeps 排序数组
     ([@deeps[id], id] for id of @deeps)
-      .sort()
+      .sort (a, b)-> a[0] - b[0]
       .map (item)-> item[1]
 
 # SET = {}
