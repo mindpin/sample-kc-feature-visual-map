@@ -71,6 +71,7 @@ svg.knsvg {
       fill: #232B2D;
       stroke: #65B2EF;
       stroke-width: 5px;
+      cursor: pointer;
 
       &.iroot {
         display: none;
@@ -79,14 +80,25 @@ svg.knsvg {
 
       &.start-point {
         stroke: #FFB43B;
+        // &:hover { fill: #FFB43B; }
+      }
+
+      &:hover {
+        stroke: mix(red, #FFB43B, 50%);
+        stroke-width: 7px;
       }
     }
   }
 
   path.link {
     fill: none;
-    stroke: #6F7B7E;
+    stroke: darken(#6F7B7E, 10%);
     stroke-width: 3px;
+
+    &.hover {
+      stroke: mix(red, #FFB43B, 50%);
+      stroke-width: 5px;
+    }
 
     &.iroot {
       display: none;

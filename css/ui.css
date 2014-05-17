@@ -1536,16 +1536,23 @@ svg.knsvg {
   svg.knsvg g.node circle {
     fill: #232B2D;
     stroke: #65B2EF;
-    stroke-width: 5px; }
+    stroke-width: 5px;
+    cursor: pointer; }
     svg.knsvg g.node circle.iroot {
       display: none;
       pointer-events: none; }
     svg.knsvg g.node circle.start-point {
       stroke: #FFB43B; }
+    svg.knsvg g.node circle:hover {
+      stroke: #ff5a1d;
+      stroke-width: 7px; }
   svg.knsvg path.link {
     fill: none;
-    stroke: #6F7B7E;
+    stroke: #576163;
     stroke-width: 3px; }
+    svg.knsvg path.link.hover {
+      stroke: #ff5a1d;
+      stroke-width: 5px; }
     svg.knsvg path.link.iroot {
       display: none;
       pointer-events: none; }

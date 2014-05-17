@@ -24,6 +24,8 @@ class KnowledgeNetGraph
     @_links()
     @_nodes()
 
+    @_events()
+
 
   _svg: ->
     zoom_behavior = d3.behavior.zoom()
@@ -75,36 +77,59 @@ class KnowledgeNetGraph
     @graph.attr 'transform', "translate(#{@offset_x}, 0)"
 
   _nodes: ->
-    enter = @graph.selectAll('.node')
+    @nodes = @graph.selectAll('.node')
       .data @nodes
       .enter()
       .append 'g'
-      .attr 'class', 'node'
-      .attr 'transform', (d)->
-        "translate(#{d.x}, #{d.y})"
+      .attr
+        'class': 'node'
+        'transform': (d)->
+          "translate(#{d.x}, #{d.y})"
 
-    @circles = enter.append 'circle'
-      .attr 'r', 15
-      .attr 'class', (d)=>
-        klass = []
-        if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
-        if d.depth is 1 then klass.push 'start-point'
-        klass.join ' '
+    @circles = @nodes.append 'circle'
+      .attr
+        'r': 15
+        'class': (d)=>
+          klass = []
+          if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
+          if d.depth is 1 then klass.push 'start-point'
+          klass.join ' '
 
-    @name_texts = enter.append 'text'
-      .attr 'dy', 45
-      .attr 'text-anchor', 'middle'
+    @name_texts = @nodes.append 'text'
+      .attr
+        'y': 45
+        'text-anchor': 'middle'
       .text (d)-> d.name
     @__set_text_class(1)
 
 
   _links: ->
-    links = @tree_data.edges
+    edges = @tree_data.edges
 
-    @graph.selectAll('.link')
-      .data links
+    @links = @graph.selectAll('.link')
+      .data edges
       .enter()
       .append 'path'
-      .attr 'd', d3.svg.diagonal()
-      .attr 'class', (d)=>
-        if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'
+      .attr
+        'd': d3.svg.diagonal()
+        'class': (d)=>
+          if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'
+
+  _events: ->
+    that = @
+    @circles
+      .on 'mouseover', (d)->
+        # d is data object
+        # this is dom
+        links = that.links.filter (d1)->
+          d1.target.id is d.id
+
+        links.attr
+          'class': 'link hover'
+
+      .on 'mouseout', (d)->
+        links = that.links.filter (d1)->
+          d1.target.id is d.id
+
+        links.attr
+          'class': 'link'
