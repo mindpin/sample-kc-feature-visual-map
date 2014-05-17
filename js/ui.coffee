@@ -6,6 +6,8 @@ jQuery ->
 class KnowledgeNetGraph
   constructor: (@$elm, @data)->
     @SCALE = [0.25, 2]
+    @IMAGINARY_ROOT_NAME = 'IROOT'
+    @BASE_OFFSET_X = 300
 
     @offset_x = 0
     @offset_y = 0
@@ -34,7 +36,7 @@ class KnowledgeNetGraph
 
   __zoom: =>
     scale = d3.event.scale
-    @__toggle_text_by_scale scale
+    @__set_text_class scale
 
     translate = d3.event.translate
 
@@ -42,25 +44,30 @@ class KnowledgeNetGraph
       "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
        scale(#{scale})"
 
-  __toggle_text_by_scale: (scale)->
+  __set_text_class: (scale)->
+    klass = ['name']
     if scale < 0.8
-      @text.attr 'class', 'hide'
-    else
-      @text.attr 'class', null
+      klass.push 'hide'
+
+    @name_text
+      .attr 'class', (d)=>
+        if d.name is @IMAGINARY_ROOT_NAME
+          "iroot " + klass.join ' '
+        else
+          klass.join ' '
 
   _tree: ->
     tree_data = @knet.get_tree_nesting_data()
 
-    obj = {
-      name:'ROOT'
+    obj =
+      name: @IMAGINARY_ROOT_NAME
       children: tree_data
-    }
 
     # ------------
     # D3
 
     tree = d3.layout.tree()
-      .nodeSize [80, 100]
+      .nodeSize [80, 120]
       .separation (a, b)->
         if a.parent == b.parent then 1 else 2;
 
@@ -72,7 +79,7 @@ class KnowledgeNetGraph
     links = tree.links nodes
 
     first_node = tree_data[0]
-    @offset_x = - first_node.x + 300
+    @offset_x = - first_node.x + @BASE_OFFSET_X
     @graph.attr 'transform', "translate(#{@offset_x}, 0)"
 
 
@@ -85,33 +92,24 @@ class KnowledgeNetGraph
       .attr 'transform', (d)->
         "translate(#{d.x}, #{d.y})"
 
-    node_enter.append 'circle'
+    @circle = node_enter.append 'circle'
       .attr 'r', 15
-      .style 'fill', '#232B2D'
-      .style 'stroke', '#65B2EF'
-      .style 'stroke-width', 5
-      .style 'display', (d)->
-        if d.name == 'ROOT' then 'none'
+      .attr 'class', (d)=>
+        klass = []
+        if d.depth is 1 then klass.push 'start-point'
+        if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
+        klass.join ' '
 
-    @text = node_enter.append 'text'
+    @name_text = node_enter.append 'text'
       .attr 'dy', 45
       .attr 'text-anchor', 'middle'
       .text (d)-> d.name
-      .style 'font-family', 'arial, 微软雅黑'
-      .style 'font-size', '14px'
-      # .style 'font-weight', 'bold'
-      .style 'fill', '#fff'
-      .style 'display', (d)->
-        if d.name == 'ROOT' then 'none'
+    @__set_text_class(1)
 
     @graph.selectAll('.link')
       .data links
       .enter()
       .insert 'path', 'g'
-      .attr 'class', 'link'
       .attr 'd', diagonal
-      .style 'fill', 'none'
-      .style 'stroke', '#6F7B7E'
-      .style 'stroke-width', '3px'
-      .style 'display', (d)->
-        if d.source.name == 'ROOT' then 'none'
+      .attr 'class', (d)=>
+        if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'

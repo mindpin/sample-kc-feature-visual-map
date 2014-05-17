@@ -17,6 +17,8 @@
       this.data = data;
       this.__zoom = __bind(this.__zoom, this);
       this.SCALE = [0.25, 2];
+      this.IMAGINARY_ROOT_NAME = 'IROOT';
+      this.BASE_OFFSET_X = 300;
       this.offset_x = 0;
       this.offset_y = 0;
       this.knet = new KnowledgeNet(this.data);
@@ -38,27 +40,36 @@
     KnowledgeNetGraph.prototype.__zoom = function() {
       var scale, translate;
       scale = d3.event.scale;
-      this.__toggle_text_by_scale(scale);
+      this.__set_text_class(scale);
       translate = d3.event.translate;
       return this.graph.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
     };
 
-    KnowledgeNetGraph.prototype.__toggle_text_by_scale = function(scale) {
+    KnowledgeNetGraph.prototype.__set_text_class = function(scale) {
+      var klass;
+      klass = ['name'];
       if (scale < 0.8) {
-        return this.text.attr('class', 'hide');
-      } else {
-        return this.text.attr('class', null);
+        klass.push('hide');
       }
+      return this.name_text.attr('class', (function(_this) {
+        return function(d) {
+          if (d.name === _this.IMAGINARY_ROOT_NAME) {
+            return "iroot " + klass.join(' ');
+          } else {
+            return klass.join(' ');
+          }
+        };
+      })(this));
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
       var diagonal, first_node, links, node_enter, nodes, obj, tree, tree_data;
       tree_data = this.knet.get_tree_nesting_data();
       obj = {
-        name: 'ROOT',
+        name: this.IMAGINARY_ROOT_NAME,
         children: tree_data
       };
-      tree = d3.layout.tree().nodeSize([80, 100]).separation(function(a, b) {
+      tree = d3.layout.tree().nodeSize([80, 120]).separation(function(a, b) {
         if (a.parent === b.parent) {
           return 1;
         } else {
@@ -71,28 +82,37 @@
       nodes = tree.nodes(obj);
       links = tree.links(nodes);
       first_node = tree_data[0];
-      this.offset_x = -first_node.x + 300;
+      this.offset_x = -first_node.x + this.BASE_OFFSET_X;
       this.graph.attr('transform', "translate(" + this.offset_x + ", 0)");
       node_enter = this.graph.selectAll('.node').data(nodes).enter().append('g').attr('class', 'node').attr('transform', function(d) {
         return "translate(" + d.x + ", " + d.y + ")";
       });
-      node_enter.append('circle').attr('r', 15).style('fill', '#232B2D').style('stroke', '#65B2EF').style('stroke-width', 5).style('display', function(d) {
-        if (d.name === 'ROOT') {
-          return 'none';
-        }
-      });
-      this.text = node_enter.append('text').attr('dy', 45).attr('text-anchor', 'middle').text(function(d) {
+      this.circle = node_enter.append('circle').attr('r', 15).attr('class', (function(_this) {
+        return function(d) {
+          var klass;
+          klass = [];
+          if (d.depth === 1) {
+            klass.push('start-point');
+          }
+          if (d.name === _this.IMAGINARY_ROOT_NAME) {
+            klass.push('iroot');
+          }
+          return klass.join(' ');
+        };
+      })(this));
+      this.name_text = node_enter.append('text').attr('dy', 45).attr('text-anchor', 'middle').text(function(d) {
         return d.name;
-      }).style('font-family', 'arial, 微软雅黑').style('font-size', '14px').style('fill', '#fff').style('display', function(d) {
-        if (d.name === 'ROOT') {
-          return 'none';
-        }
       });
-      return this.graph.selectAll('.link').data(links).enter().insert('path', 'g').attr('class', 'link').attr('d', diagonal).style('fill', 'none').style('stroke', '#6F7B7E').style('stroke-width', '3px').style('display', function(d) {
-        if (d.source.name === 'ROOT') {
-          return 'none';
-        }
-      });
+      this.__set_text_class(1);
+      return this.graph.selectAll('.link').data(links).enter().insert('path', 'g').attr('d', diagonal).attr('class', (function(_this) {
+        return function(d) {
+          if (d.source.name === _this.IMAGINARY_ROOT_NAME) {
+            return 'iroot link';
+          } else {
+            return 'link';
+          }
+        };
+      })(this));
     };
 
     return KnowledgeNetGraph;
