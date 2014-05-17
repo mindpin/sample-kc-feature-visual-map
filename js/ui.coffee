@@ -20,6 +20,8 @@ class KnowledgeNetGraph
   draw: ->
     @_svg()
     @_tree()
+    @_links()
+    @_nodes()
 
 
   _svg: ->
@@ -36,9 +38,8 @@ class KnowledgeNetGraph
 
   __zoom: =>
     scale = d3.event.scale
-    @__set_text_class scale
-
     translate = d3.event.translate
+    @__set_text_class scale
 
     @graph.attr 'transform',
       "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
@@ -49,7 +50,7 @@ class KnowledgeNetGraph
     if scale < 0.8
       klass.push 'hide'
 
-    @name_text
+    @name_texts
       .attr 'class', (d)=>
         if d.name is @IMAGINARY_ROOT_NAME
           "iroot " + klass.join ' '
@@ -59,57 +60,50 @@ class KnowledgeNetGraph
   _tree: ->
     tree_data = @knet.get_tree_nesting_data()
 
-    obj =
+    imarginay_root =
       name: @IMAGINARY_ROOT_NAME
       children: tree_data
 
-    # ------------
-    # D3
-
-    tree = d3.layout.tree()
+    @tree = d3.layout.tree()
       .nodeSize [80, 120]
-      .separation (a, b)->
-        if a.parent == b.parent then 1 else 2;
 
-    diagonal = d3.svg.diagonal()
-      .projection (d)->
-        [d.x, d.y]
-
-    nodes = tree.nodes obj
-    links = tree.links nodes
+    @nodes = @tree.nodes imarginay_root
 
     first_node = tree_data[0]
     @offset_x = - first_node.x + @BASE_OFFSET_X
     @graph.attr 'transform', "translate(#{@offset_x}, 0)"
 
-
-
-    node_enter = @graph.selectAll('.node')
-      .data nodes
+  _nodes: ->
+    enter = @graph.selectAll('.node')
+      .data @nodes
       .enter()
       .append 'g'
       .attr 'class', 'node'
       .attr 'transform', (d)->
         "translate(#{d.x}, #{d.y})"
 
-    @circle = node_enter.append 'circle'
+    @circles = enter.append 'circle'
       .attr 'r', 15
       .attr 'class', (d)=>
         klass = []
-        if d.depth is 1 then klass.push 'start-point'
         if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
+        if d.depth is 1 then klass.push 'start-point'
         klass.join ' '
 
-    @name_text = node_enter.append 'text'
+    @name_texts = enter.append 'text'
       .attr 'dy', 45
       .attr 'text-anchor', 'middle'
       .text (d)-> d.name
     @__set_text_class(1)
 
+
+  _links: ->
+    links = @tree.links @nodes
+
     @graph.selectAll('.link')
       .data links
       .enter()
-      .insert 'path', 'g'
-      .attr 'd', diagonal
+      .append 'path'
+      .attr 'd', d3.svg.diagonal()
       .attr 'class', (d)=>
         if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'

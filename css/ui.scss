@@ -1,35 +1,36 @@
 @import "../lily/css/lily.scss";
 
 body.sample {
+  $head-height:50px;
+  $sidebar-width:200px;
+
   .page-head {
-    background:url(knowledge-camp-50x50.png) no-repeat 15px 0;
-    background-color: #1B2224;
-    height:50px;line-height:50px;
-    color:white;
-    font-size:18px;
-    padding-left:80px;
-    // font-weight:bold;
+    position: fixed;
+    top:0;right:0;left:$sidebar-width;
+    height:$head-height;
+    background-color:lighten(#232B2D, 5%);
   }
 
   .page-content {
-    position:absolute;
-    top:50px;left:0;right:0;bottom:0;
-
     .sidebar {
-      position:absolute;
+      position:fixed;
       top:0;left:0;bottom:0;
-      width:200px;
+      width:$sidebar-width;
       background-color:#1B2224;
     }
 
     .graph-paper {
-      position:absolute;
-      top:0;right:0;bottom:0;left:200px;
+      position:fixed;
+      top:$head-height;right:0;bottom:0;left:$sidebar-width;
       background-color:#232B2D;
       overflow:hidden;
     }
+  }
 
-    @include -below(pad) {
+  @include -below(pad) {
+    .page-head {left: 0;}
+
+    .page-content {
       .sidebar{ width:0; }
       .graph-paper { left:0;}
     }

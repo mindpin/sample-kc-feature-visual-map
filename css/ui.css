@@ -1481,39 +1481,34 @@ body.lily-example-doc .example + .code-highlight {
   margin-top: -16px; }
 
 body.sample .page-head {
-  background: url(knowledge-camp-50x50.png) no-repeat 15px 0;
-  background-color: #1B2224;
-  height: 50px;
-  line-height: 50px;
-  color: white;
-  font-size: 18px;
-  padding-left: 80px; }
-body.sample .page-content {
-  position: absolute;
-  top: 50px;
-  left: 0;
+  position: fixed;
+  top: 0;
   right: 0;
-  bottom: 0; }
+  left: 200px;
+  height: 50px;
+  background-color: #2e393b; }
+body.sample .page-content .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 200px;
+  background-color: #1B2224; }
+body.sample .page-content .graph-paper {
+  position: fixed;
+  top: 50px;
+  right: 0;
+  bottom: 0;
+  left: 200px;
+  background-color: #232B2D;
+  overflow: hidden; }
+@media (max-width: 991px) {
+  body.sample .page-head {
+    left: 0; }
   body.sample .page-content .sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 200px;
-    background-color: #1B2224; }
+    width: 0; }
   body.sample .page-content .graph-paper {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 200px;
-    background-color: #232B2D;
-    overflow: hidden; }
-  @media (max-width: 991px) {
-    body.sample .page-content .sidebar {
-      width: 0; }
-    body.sample .page-content .graph-paper {
-      left: 0; } }
+    left: 0; } }
 
 svg.knsvg {
   width: 100%;

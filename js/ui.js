@@ -27,7 +27,9 @@
 
     KnowledgeNetGraph.prototype.draw = function() {
       this._svg();
-      return this._tree();
+      this._tree();
+      this._links();
+      return this._nodes();
     };
 
     KnowledgeNetGraph.prototype._svg = function() {
@@ -40,8 +42,8 @@
     KnowledgeNetGraph.prototype.__zoom = function() {
       var scale, translate;
       scale = d3.event.scale;
-      this.__set_text_class(scale);
       translate = d3.event.translate;
+      this.__set_text_class(scale);
       return this.graph.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
     };
 
@@ -51,7 +53,7 @@
       if (scale < 0.8) {
         klass.push('hide');
       }
-      return this.name_text.attr('class', (function(_this) {
+      return this.name_texts.attr('class', (function(_this) {
         return function(d) {
           if (d.name === _this.IMAGINARY_ROOT_NAME) {
             return "iroot " + klass.join(' ');
@@ -63,48 +65,47 @@
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
-      var diagonal, first_node, links, node_enter, nodes, obj, tree, tree_data;
+      var first_node, imarginay_root, tree_data;
       tree_data = this.knet.get_tree_nesting_data();
-      obj = {
+      imarginay_root = {
         name: this.IMAGINARY_ROOT_NAME,
         children: tree_data
       };
-      tree = d3.layout.tree().nodeSize([80, 120]).separation(function(a, b) {
-        if (a.parent === b.parent) {
-          return 1;
-        } else {
-          return 2;
-        }
-      });
-      diagonal = d3.svg.diagonal().projection(function(d) {
-        return [d.x, d.y];
-      });
-      nodes = tree.nodes(obj);
-      links = tree.links(nodes);
+      this.tree = d3.layout.tree().nodeSize([80, 120]);
+      this.nodes = this.tree.nodes(imarginay_root);
       first_node = tree_data[0];
       this.offset_x = -first_node.x + this.BASE_OFFSET_X;
-      this.graph.attr('transform', "translate(" + this.offset_x + ", 0)");
-      node_enter = this.graph.selectAll('.node').data(nodes).enter().append('g').attr('class', 'node').attr('transform', function(d) {
+      return this.graph.attr('transform', "translate(" + this.offset_x + ", 0)");
+    };
+
+    KnowledgeNetGraph.prototype._nodes = function() {
+      var enter;
+      enter = this.graph.selectAll('.node').data(this.nodes).enter().append('g').attr('class', 'node').attr('transform', function(d) {
         return "translate(" + d.x + ", " + d.y + ")";
       });
-      this.circle = node_enter.append('circle').attr('r', 15).attr('class', (function(_this) {
+      this.circles = enter.append('circle').attr('r', 15).attr('class', (function(_this) {
         return function(d) {
           var klass;
           klass = [];
-          if (d.depth === 1) {
-            klass.push('start-point');
-          }
           if (d.name === _this.IMAGINARY_ROOT_NAME) {
             klass.push('iroot');
+          }
+          if (d.depth === 1) {
+            klass.push('start-point');
           }
           return klass.join(' ');
         };
       })(this));
-      this.name_text = node_enter.append('text').attr('dy', 45).attr('text-anchor', 'middle').text(function(d) {
+      this.name_texts = enter.append('text').attr('dy', 45).attr('text-anchor', 'middle').text(function(d) {
         return d.name;
       });
-      this.__set_text_class(1);
-      return this.graph.selectAll('.link').data(links).enter().insert('path', 'g').attr('d', diagonal).attr('class', (function(_this) {
+      return this.__set_text_class(1);
+    };
+
+    KnowledgeNetGraph.prototype._links = function() {
+      var links;
+      links = this.tree.links(this.nodes);
+      return this.graph.selectAll('.link').data(links).enter().append('path').attr('d', d3.svg.diagonal()).attr('class', (function(_this) {
         return function(d) {
           if (d.source.name === _this.IMAGINARY_ROOT_NAME) {
             return 'iroot link';
