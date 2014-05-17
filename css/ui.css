@@ -1480,13 +1480,6 @@ body.lily-example-doc .code-highlight {
 body.lily-example-doc .example + .code-highlight {
   margin-top: -16px; }
 
-body.sample .page-head {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 200px;
-  height: 50px;
-  background-color: #2e393b; }
 body.sample .page-content .sidebar {
   position: fixed;
   top: 0;
@@ -1496,26 +1489,58 @@ body.sample .page-content .sidebar {
   background-color: #1B2224; }
 body.sample .page-content .graph-paper {
   position: fixed;
-  top: 50px;
+  top: 0;
   right: 0;
   bottom: 0;
   left: 200px;
   background-color: #232B2D;
   overflow: hidden; }
 @media (max-width: 991px) {
-  body.sample .page-head {
-    left: 0; }
   body.sample .page-content .sidebar {
     width: 0; }
   body.sample .page-content .graph-paper {
     left: 0; } }
 
-svg.knsvg {
+.knowledge-net-paper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0; }
+  .knowledge-net-paper .bar {
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    z-index: 1; }
+    .knowledge-net-paper .bar .scale {
+      float: left;
+      height: 40px;
+      line-height: 40px;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      -ms-box-sizing: border-box;
+      -o-box-sizing: border-box;
+      box-sizing: border-box;
+      margin-top: 10px;
+      margin-left: 10px;
+      background-color: #38382D;
+      width: 100px;
+      text-align: center;
+      border-radius: 3px;
+      color: #FFB43B;
+      font-size: 24px;
+      font-weight: bold;
+      pointer-events: none; }
+
+.knowledge-net-paper svg.knsvg {
   width: 100%;
   height: 100%; }
-  svg.knsvg g.node text.name {
+  .knowledge-net-paper svg.knsvg g.node text.name {
     cursor: default;
-    font-size: 14px;
+    font-size: 16px;
     fill: #fff;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -1523,36 +1548,36 @@ svg.knsvg {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    svg.knsvg g.node text.name.hide {
+    .knowledge-net-paper svg.knsvg g.node text.name.hide {
       opacity: 0;
       pointer-events: none; }
       @media (max-width: 767px) {
-        svg.knsvg g.node text.name.hide {
+        .knowledge-net-paper svg.knsvg g.node text.name.hide {
           opacity: 0.6;
           pointer-events: all; } }
-    svg.knsvg g.node text.name.iroot {
+    .knowledge-net-paper svg.knsvg g.node text.name.iroot {
       pointer-events: none;
       display: none; }
-  svg.knsvg g.node circle {
+  .knowledge-net-paper svg.knsvg g.node circle {
     fill: #232B2D;
     stroke: #65B2EF;
     stroke-width: 5px;
     cursor: pointer; }
-    svg.knsvg g.node circle.iroot {
+    .knowledge-net-paper svg.knsvg g.node circle.iroot {
       display: none;
       pointer-events: none; }
-    svg.knsvg g.node circle.start-point {
+    .knowledge-net-paper svg.knsvg g.node circle.start-point {
       stroke: #FFB43B; }
-    svg.knsvg g.node circle:hover {
+    .knowledge-net-paper svg.knsvg g.node circle:hover {
       stroke: #ff5a1d;
       stroke-width: 7px; }
-  svg.knsvg path.link {
+  .knowledge-net-paper svg.knsvg path.link {
     fill: none;
     stroke: #576163;
     stroke-width: 3px; }
-    svg.knsvg path.link.hover {
+    .knowledge-net-paper svg.knsvg path.link.hover {
       stroke: #ff5a1d;
       stroke-width: 5px; }
-    svg.knsvg path.link.iroot {
+    .knowledge-net-paper svg.knsvg path.link.iroot {
       display: none;
       pointer-events: none; }

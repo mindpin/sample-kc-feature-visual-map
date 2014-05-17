@@ -13,6 +13,7 @@ class KnowledgeNet
       @_points_map[p.id] =
         id: p.id
         name: p.name
+        desc: p.desc
         edges: []
         parents: []
         children: []
@@ -138,6 +139,7 @@ class KnowledgeNet
       map[id] =
         id: point.id
         name: point.name
+        desc: point.desc
         children: []
         deep: @deeps[id]
 
@@ -185,6 +187,66 @@ class KnowledgeNet
     ([@deeps[id], id] for id of @deeps)
       .sort (a, b)-> a[0] - b[0]
       .map (item)-> item[1]
+
+  # 字符串分割，
+  # <=6，不处理
+  # 6< and <=12，均匀分成两段
+  # 12< and <=18 均匀分成三段
+  # 英文处理尚有 BUG，还需改进
+  @break_text: (text)->
+    # 第一步，拆分字符串，中文字符一个字是一个子串
+    # 连续非中文字符不拆分
+    arr = @__split(text)
+    length = 0
+    for x in arr
+      length += x[1]
+    
+    # 第二步，计算子串长度
+    slen = @__slen length
+
+    # 第三步，分解子串
+    re = []
+    tmp = ['', 0]
+    while arr.length > 0
+      # console.log tmp, slen
+
+      if tmp[1] >= slen
+        # console.log "!"
+        re.push tmp[0]
+        tmp = ['', 0]
+
+      x = arr.shift()
+      tmp[0] += x[0]
+      tmp[1] += x[1]
+
+    re.push tmp[0]
+    re
+
+
+  @__split: (text)->
+    arr = text.split ''
+    re = []
+    stack = ''
+
+    push_stack = ->
+      if stack.length > 0
+        re.push [stack, Math.ceil(stack.length / 2)]
+        stack = ''
+
+    for s in arr
+      if s.match /[\u4e00-\u9fa5]/
+        push_stack()
+        re.push [s, 1]
+      else
+        stack = stack + s
+
+    push_stack()
+
+    re
+
+  @__slen: (length)->
+    c = (length - 1) // 6
+    Math.ceil(length / (c + 1))
 
 # SET = {}
 # RE = {}

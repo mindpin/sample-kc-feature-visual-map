@@ -6,9 +6,15 @@ jQuery ->
 
 class KnowledgeNetGraph
   constructor: (@$elm, @data)->
+    @$paper = jQuery '<div></div>'
+      .addClass 'knowledge-net-paper'
+      .appendTo @$elm
+
     @SCALE = [0.25, 2]
     @IMAGINARY_ROOT_NAME = 'IROOT'
     @BASE_OFFSET_X = 300
+
+    [@NODE_WIDTH, @NODE_HEIGHT] = [150, 180]
 
     @offset_x = 0
     @offset_y = 0
@@ -19,6 +25,8 @@ class KnowledgeNetGraph
 
 
   draw: ->
+    @_bar()
+
     @_svg()
     @_tree()
     @_links()
@@ -26,17 +34,27 @@ class KnowledgeNetGraph
 
     @_events()
 
+  _bar: ->
+    @$bar = jQuery '<div></div>'
+      .addClass 'bar'
+      .appendTo @$paper
+
+    @$scale = jQuery '<div></div>'
+      .addClass 'scale'
+      .text '100 %'
+      .appendTo @$bar
 
   _svg: ->
     zoom_behavior = d3.behavior.zoom()
       .scaleExtent @SCALE
       .on 'zoom', @__zoom
 
-    @svg = d3.select @$elm[0]
+    @svg = d3.select @$paper[0]
       .append 'svg'
         .attr 'class', 'knsvg'
         .call zoom_behavior
-    
+        .on 'dblclick.zoom', null
+
     @graph = @svg.append('g')
 
   __zoom: =>
@@ -48,9 +66,11 @@ class KnowledgeNetGraph
       "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
        scale(#{scale})"
 
+    @$scale.text "#{Math.round(scale * 100)} %"
+
   __set_text_class: (scale)->
     klass = ['name']
-    if scale < 0.7
+    if scale < 0.75
       klass.push 'hide'
 
     @name_texts
@@ -68,7 +88,7 @@ class KnowledgeNetGraph
       children: @tree_data.roots
 
     @tree = d3.layout.tree()
-      .nodeSize [80, 160]
+      .nodeSize [@NODE_WIDTH, @NODE_HEIGHT]
 
     @nodes = @tree.nodes imarginay_root
 
@@ -99,7 +119,13 @@ class KnowledgeNetGraph
       .attr
         'y': 45
         'text-anchor': 'middle'
-      .text (d)-> d.name
+      .html (d)->
+        re = for str, i in KnowledgeNet.break_text(d.name)
+          dy = if i is 0 then '0' else '1.5em'
+
+          "<tspan x='0' dy='#{dy}'>#{str}</tspan>"
+        re.join ''
+
     @__set_text_class(1)
 
 
@@ -118,7 +144,7 @@ class KnowledgeNetGraph
   _events: ->
     that = @
     @circles
-      .on 'mouseover', (d)->
+      .on 'mouseover', (d, i)->
         # d is data object
         # this is dom
         links = that.links.filter (d1)->
@@ -127,9 +153,15 @@ class KnowledgeNetGraph
         links.attr
           'class': 'link hover'
 
+        # offset = jQuery(this).offset()
+        # console.log d.name, d.desc
+
       .on 'mouseout', (d)->
         links = that.links.filter (d1)->
           d1.target.id is d.id
 
         links.attr
           'class': 'link'
+
+      .on 'click', (d)->
+        # console.log jQuery(this).offset()

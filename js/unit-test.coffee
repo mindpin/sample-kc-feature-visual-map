@@ -341,4 +341,60 @@ do_test = (g1_obj, g2_obj, g3_obj, g4_obj)->
         'C', 'D', 'E', 'A', 'B'
       ]
   
+  do ->
+    test 'break-text', ->
+      deepEqual KnowledgeNet.break_text('数组'), ['数组']
+      deepEqual KnowledgeNet.break_text('创建数组'), ['创建数组']
+      deepEqual KnowledgeNet.break_text('数组元素读写'), ['数组元素读写']
+
+    test 'break-text', ->
+      deepEqual KnowledgeNet.break_text('数组元素增删改'), [
+        '数组元素', '增删改'
+      ]
+      deepEqual KnowledgeNet.break_text('对象属性的高级操作'), [
+        '对象属性的', '高级操作'
+      ]
+      deepEqual KnowledgeNet.break_text('可读写性和可配置性的概念定义'), [
+        '可读写性和', '可配置性的', '概念定义'
+      ]
+
+    test 'split', ->
+      deepEqual KnowledgeNet.__split('不作死就不会死'), [
+        ['不', 1],['作', 1],['死', 1]
+        ['就', 1],['不', 1],['会', 1,], ['死', 1]
+      ]
+
+      deepEqual KnowledgeNet.__split('让我 go'), [
+        ['让', 1],['我', 1],[' go', 2]
+      ]
+
+      deepEqual KnowledgeNet.__split('follow 你的心'), [
+        ['follow ', 4],['你', 1],['的', 1], ['心', 1]
+      ]
+
+      deepEqual KnowledgeNet.__split('不 zuo 不 die 懂不懂 ?'), [
+        ['不', 1],[' zuo ', 3],['不', 1], [' die ', 3]
+        ['懂', 1],['不', 1],['懂', 1],[' ?', 1]
+      ]
+
+    test 'slen', ->
+      equal KnowledgeNet.__slen(1), 1
+      equal KnowledgeNet.__slen(2), 2
+      equal KnowledgeNet.__slen(3), 3
+      equal KnowledgeNet.__slen(4), 4
+      equal KnowledgeNet.__slen(5), 5
+      equal KnowledgeNet.__slen(6), 6
+      equal KnowledgeNet.__slen(7), 4
+      equal KnowledgeNet.__slen(8), 4
+      equal KnowledgeNet.__slen(9), 5
+      equal KnowledgeNet.__slen(10), 5
+      equal KnowledgeNet.__slen(11), 6
+      equal KnowledgeNet.__slen(12), 6
+      equal KnowledgeNet.__slen(13), 5
+      equal KnowledgeNet.__slen(14), 5
+      equal KnowledgeNet.__slen(15), 5
+      equal KnowledgeNet.__slen(16), 6
+      equal KnowledgeNet.__slen(17), 6
+      equal KnowledgeNet.__slen(18), 6
+
   # test '环路检查'

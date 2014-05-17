@@ -19,6 +19,7 @@
         this._points_map[p.id] = {
           id: p.id,
           name: p.name,
+          desc: p.desc,
           edges: [],
           parents: [],
           children: []
@@ -180,6 +181,7 @@
         map[id] = {
           id: point.id,
           name: point.name,
+          desc: point.desc,
           children: [],
           deep: this.deeps[id]
         };
@@ -260,6 +262,60 @@
       }).map(function(item) {
         return item[1];
       });
+    };
+
+    KnowledgeNet.break_text = function(text) {
+      var arr, length, re, slen, tmp, x, _i, _len;
+      arr = this.__split(text);
+      length = 0;
+      for (_i = 0, _len = arr.length; _i < _len; _i++) {
+        x = arr[_i];
+        length += x[1];
+      }
+      slen = this.__slen(length);
+      re = [];
+      tmp = ['', 0];
+      while (arr.length > 0) {
+        if (tmp[1] >= slen) {
+          re.push(tmp[0]);
+          tmp = ['', 0];
+        }
+        x = arr.shift();
+        tmp[0] += x[0];
+        tmp[1] += x[1];
+      }
+      re.push(tmp[0]);
+      return re;
+    };
+
+    KnowledgeNet.__split = function(text) {
+      var arr, push_stack, re, s, stack, _i, _len;
+      arr = text.split('');
+      re = [];
+      stack = '';
+      push_stack = function() {
+        if (stack.length > 0) {
+          re.push([stack, Math.ceil(stack.length / 2)]);
+          return stack = '';
+        }
+      };
+      for (_i = 0, _len = arr.length; _i < _len; _i++) {
+        s = arr[_i];
+        if (s.match(/[\u4e00-\u9fa5]/)) {
+          push_stack();
+          re.push([s, 1]);
+        } else {
+          stack = stack + s;
+        }
+      }
+      push_stack();
+      return re;
+    };
+
+    KnowledgeNet.__slen = function(length) {
+      var c;
+      c = Math.floor((length - 1) / 6);
+      return Math.ceil(length / (c + 1));
     };
 
     return KnowledgeNet;

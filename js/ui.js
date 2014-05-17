@@ -13,12 +13,15 @@
 
   KnowledgeNetGraph = (function() {
     function KnowledgeNetGraph($elm, data) {
+      var _ref;
       this.$elm = $elm;
       this.data = data;
       this.__zoom = __bind(this.__zoom, this);
+      this.$paper = jQuery('<div></div>').addClass('knowledge-net-paper').appendTo(this.$elm);
       this.SCALE = [0.25, 2];
       this.IMAGINARY_ROOT_NAME = 'IROOT';
       this.BASE_OFFSET_X = 300;
+      _ref = [150, 180], this.NODE_WIDTH = _ref[0], this.NODE_HEIGHT = _ref[1];
       this.offset_x = 0;
       this.offset_y = 0;
       this.knet = new KnowledgeNet(this.data);
@@ -26,6 +29,7 @@
     }
 
     KnowledgeNetGraph.prototype.draw = function() {
+      this._bar();
       this._svg();
       this._tree();
       this._links();
@@ -33,10 +37,15 @@
       return this._events();
     };
 
+    KnowledgeNetGraph.prototype._bar = function() {
+      this.$bar = jQuery('<div></div>').addClass('bar').appendTo(this.$paper);
+      return this.$scale = jQuery('<div></div>').addClass('scale').text('100 %').appendTo(this.$bar);
+    };
+
     KnowledgeNetGraph.prototype._svg = function() {
       var zoom_behavior;
       zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).on('zoom', this.__zoom);
-      this.svg = d3.select(this.$elm[0]).append('svg').attr('class', 'knsvg').call(zoom_behavior);
+      this.svg = d3.select(this.$paper[0]).append('svg').attr('class', 'knsvg').call(zoom_behavior).on('dblclick.zoom', null);
       return this.graph = this.svg.append('g');
     };
 
@@ -45,13 +54,14 @@
       scale = d3.event.scale;
       translate = d3.event.translate;
       this.__set_text_class(scale);
-      return this.graph.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
+      this.graph.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
+      return this.$scale.text("" + (Math.round(scale * 100)) + " %");
     };
 
     KnowledgeNetGraph.prototype.__set_text_class = function(scale) {
       var klass;
       klass = ['name'];
-      if (scale < 0.7) {
+      if (scale < 0.75) {
         klass.push('hide');
       }
       return this.name_texts.attr('class', (function(_this) {
@@ -72,7 +82,7 @@
         name: this.IMAGINARY_ROOT_NAME,
         children: this.tree_data.roots
       };
-      this.tree = d3.layout.tree().nodeSize([80, 160]);
+      this.tree = d3.layout.tree().nodeSize([this.NODE_WIDTH, this.NODE_HEIGHT]);
       this.nodes = this.tree.nodes(imarginay_root);
       first_node = this.tree_data.roots[0];
       this.offset_x = -first_node.x + this.BASE_OFFSET_X;
@@ -105,8 +115,20 @@
       this.name_texts = this.nodes.append('text').attr({
         'y': 45,
         'text-anchor': 'middle'
-      }).text(function(d) {
-        return d.name;
+      }).html(function(d) {
+        var dy, i, re, str;
+        re = (function() {
+          var _i, _len, _ref, _results;
+          _ref = KnowledgeNet.break_text(d.name);
+          _results = [];
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            str = _ref[i];
+            dy = i === 0 ? '0' : '1.5em';
+            _results.push("<tspan x='0' dy='" + dy + "'>" + str + "</tspan>");
+          }
+          return _results;
+        })();
+        return re.join('');
       });
       return this.__set_text_class(1);
     };
@@ -131,7 +153,7 @@
     KnowledgeNetGraph.prototype._events = function() {
       var that;
       that = this;
-      return this.circles.on('mouseover', function(d) {
+      return this.circles.on('mouseover', function(d, i) {
         var links;
         links = that.links.filter(function(d1) {
           return d1.target.id === d.id;
@@ -147,7 +169,7 @@
         return links.attr({
           'class': 'link'
         });
-      });
+      }).on('click', function(d) {});
     };
 
     return KnowledgeNetGraph;
