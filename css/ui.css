@@ -2835,7 +2835,7 @@ body.sample .page-content .graph-paper {
       -o-box-sizing: border-box;
       box-sizing: border-box;
       margin-left: 10px;
-      background-color: #383F41;
+      background-color: rgba(56, 63, 65, 0.8);
       width: 40px;
       border-radius: 3px;
       text-align: center;
@@ -2851,7 +2851,7 @@ body.sample .page-content .graph-paper {
         position: relative;
         top: 2px; }
       .knowledge-net-paper .bar .scale-minus:hover, .knowledge-net-paper .bar .scale-plus:hover {
-        background-color: #505a5c; }
+        background-color: rgba(80, 90, 92, 0.8); }
     .knowledge-net-paper .bar .start-points-count, .knowledge-net-paper .bar .common-points-count {
       float: left;
       clear: both;
@@ -2859,7 +2859,7 @@ body.sample .page-content .graph-paper {
       line-height: 40px;
       width: 200px;
       margin-top: 10px;
-      background-color: #38382D;
+      background-color: rgba(56, 56, 45, 0.8);
       border-radius: 3px;
       box-shadow: none;
       -webkit-box-sizing: border-box;
@@ -2892,18 +2892,59 @@ body.sample .page-content .graph-paper {
         top: 10px;
         left: 20px; }
     .knowledge-net-paper .bar .common-points-count {
-      background-color: #293840;
+      background-color: rgba(41, 56, 64, 0.8);
       color: #65B2EF; }
       .knowledge-net-paper .bar .common-points-count:before {
         border-color: #65B2EF; }
     .knowledge-net-paper .bar .count-pie {
-      background-color: #293840;
+      background-color: rgba(41, 56, 64, 0.8);
       width: 200px;
       height: 200px;
       float: left;
       clear: both;
       margin-top: 10px;
       border-radius: 3px; }
+  .knowledge-net-paper .point-info {
+    width: 160px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    box-sizing: border-box;
+    float: left;
+    clear: both;
+    background-color: rgba(255, 251, 227, 0.9);
+    border-radius: 3px;
+    padding: 15px;
+    color: #222;
+    position: absolute;
+    margin-top: -20px;
+    opacity: 0;
+    -webkit-transition: margin-top 0.1s, opacity 0.1s;
+    -moz-transition: margin-top 0.1s, opacity 0.1s;
+    -ms-transition: margin-top 0.1s, opacity 0.1s;
+    -o-transition: margin-top 0.1s, opacity 0.1s;
+    transition: margin-top 0.1s, opacity 0.1s;
+    pointer-events: none; }
+    .knowledge-net-paper .point-info h3 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #222;
+      font-weight: bold; }
+    .knowledge-net-paper .point-info p {
+      margin-bottom: 0; }
+    .knowledge-net-paper .point-info.show {
+      display: block;
+      opacity: 1;
+      margin-top: 0;
+      pointer-events: inherit; }
+    .knowledge-net-paper .point-info:before {
+      content: "";
+      position: absolute;
+      border: solid 10px transparent;
+      left: -20px;
+      top: 20px;
+      border-right-color: rgba(255, 251, 227, 0.9); }
 
 .knowledge-net-paper svg.knsvg {
   width: 100%;

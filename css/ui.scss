@@ -70,7 +70,7 @@ body.sample {
       height:40px; line-height: 40px;
       @include border-box;
       margin-left: 10px;
-      background-color:#383F41;
+      background-color:rgba(#383F41, 0.8);
       width:40px;
       border-radius:3px;
       text-align:center;
@@ -86,7 +86,7 @@ body.sample {
       }
 
       &:hover {
-        background-color: lighten(#383F41, 10%);
+        background-color: rgba(lighten(#383F41, 10%), 0.8);
       }
     }
 
@@ -96,7 +96,7 @@ body.sample {
       height:40px;line-height: 40px;
       width:200px;
       margin-top: 10px;
-      background-color: #38382D; //rgba(#FFB43B, 0.1);
+      background-color: rgba(#38382D, 0.8); //rgba(#FFB43B, 0.1);
       border-radius:3px;
       box-shadow:$shadow;
       @include border-box;
@@ -126,7 +126,7 @@ body.sample {
     }
 
     .common-points-count {
-      background-color:#293840;//rgba(#65B2EF, 0.1);
+      background-color:rgba(#293840, 0.8);//rgba(#65B2EF, 0.1);
       color:#65B2EF;
       &:before{
         border-color:#65B2EF;
@@ -134,12 +134,58 @@ body.sample {
     }
 
     .count-pie {
-      background-color:#293840;
+      background-color:rgba(#293840, 0.8);
       width:200px;height:200px;
       float:left;
       clear: both;
       margin-top:10px;
       border-radius:3px;
+    }
+  }
+
+  .point-info {
+    width:160px;
+    // min-height:80px;
+    @include border-box;
+    float: left;
+    clear: both;
+    background-color: rgba($area-dawn, 0.9);
+    border-radius:3px;
+    padding:15px;
+    color:#222;
+
+    position:absolute;
+
+    h3 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #222;
+      font-weight:bold;
+    }
+
+    p {
+      margin-bottom:0;
+    }
+
+    // display:none;
+    margin-top: -20px;
+    opacity: 0;
+    @include transition((margin-top .1s, opacity .1s));
+    pointer-events: none;
+
+    &.show {
+      display: block;
+      opacity: 1;
+      margin-top: 0;
+      pointer-events: inherit;
+    }
+
+    &:before {
+      content: "";
+      position:absolute;
+      border:solid 10px transparent;
+      left:-20px;top:20px;
+      border-right-color:rgba($area-dawn, 0.9);
     }
   }
 }

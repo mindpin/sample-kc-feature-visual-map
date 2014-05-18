@@ -13,10 +13,14 @@ class KnowledgeNetGraph
     @SCALE = [0.25, 2]
     @IMAGINARY_ROOT_NAME = 'IROOT'
 
+    @CIRCLE_RADIUS = 15
+
     [@NODE_WIDTH, @NODE_HEIGHT] = [150, 180]
 
     @offset_x = 0
     @offset_y = 0
+
+    @scale = 1
 
     @knet = new KnowledgeNet @data
 
@@ -38,6 +42,7 @@ class KnowledgeNetGraph
   _bar: ->
     @__bar_zoom()
     @__bar_count()
+    @__bar_point_info()
 
   __bar_zoom: ->
     @$bar = jQuery '<div></div>'
@@ -114,6 +119,37 @@ class KnowledgeNetGraph
         'fill': (d, i)-> colors[i]
         'd': arc
 
+  __bar_point_info: ->
+    @$point_info = jQuery '<div></div>'
+      .addClass 'point-info'
+      .html """
+              <h3>创建数组</h3>
+              <p>允许的字符的集合</p>
+            """
+      .appendTo @$paper
+
+  show_point_info: (point, elm)->
+    name = point.name
+    desc = point.desc
+
+    @$point_info.find('h3').html name
+    @$point_info.find('p').html desc
+
+    $e = jQuery(elm)
+    pos = $e.position()
+
+    l = pos.left + @CIRCLE_RADIUS * 2 * @scale + 30
+    t = pos.top + @CIRCLE_RADIUS * @scale - 30
+
+    @$point_info
+      .addClass 'show'
+      .css
+        'left': l
+        'top': t
+
+  hide_point_info: ->
+    @$point_info.removeClass 'show'
+
 
   _bar_events: ->
     @$scale_minus.on 'click', @__zoomout
@@ -177,6 +213,7 @@ class KnowledgeNetGraph
         scale(#{scale})"
 
     @$scale.text "#{Math.round(scale * 100)} %"
+    @scale = scale
 
   __set_text_class: (scale)->
     klass = ['name']
@@ -214,7 +251,7 @@ class KnowledgeNetGraph
 
     @circles = @nodes.append 'circle'
       .attr
-        'r': 15
+        'r': @CIRCLE_RADIUS
         'class': (d)=>
           klass = []
           if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
@@ -267,8 +304,7 @@ class KnowledgeNetGraph
         links.attr
           'class': 'link hover'
 
-        # offset = jQuery(this).offset()
-        # console.log d.name, d.desc
+        that.show_point_info(d, this)
 
       .on 'mouseout', (d)->
         links = that.links.filter (d1)->
@@ -276,6 +312,8 @@ class KnowledgeNetGraph
 
         links.attr
           'class': 'link'
+
+        that.hide_point_info()
 
       .on 'click', (d)->
         # console.log jQuery(this).offset()

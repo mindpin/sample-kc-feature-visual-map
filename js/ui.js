@@ -22,9 +22,11 @@
       this.$paper = jQuery('<div></div>').addClass('knowledge-net-paper').appendTo(this.$elm);
       this.SCALE = [0.25, 2];
       this.IMAGINARY_ROOT_NAME = 'IROOT';
+      this.CIRCLE_RADIUS = 15;
       _ref = [150, 180], this.NODE_WIDTH = _ref[0], this.NODE_HEIGHT = _ref[1];
       this.offset_x = 0;
       this.offset_y = 0;
+      this.scale = 1;
       this.knet = new KnowledgeNet(this.data);
       this.draw();
     }
@@ -42,7 +44,8 @@
 
     KnowledgeNetGraph.prototype._bar = function() {
       this.__bar_zoom();
-      return this.__bar_count();
+      this.__bar_count();
+      return this.__bar_point_info();
     };
 
     KnowledgeNetGraph.prototype.__bar_zoom = function() {
@@ -83,6 +86,30 @@
       });
     };
 
+    KnowledgeNetGraph.prototype.__bar_point_info = function() {
+      return this.$point_info = jQuery('<div></div>').addClass('point-info').html("<h3>创建数组</h3>\n<p>允许的字符的集合</p>").appendTo(this.$paper);
+    };
+
+    KnowledgeNetGraph.prototype.show_point_info = function(point, elm) {
+      var $e, desc, l, name, pos, t;
+      name = point.name;
+      desc = point.desc;
+      this.$point_info.find('h3').html(name);
+      this.$point_info.find('p').html(desc);
+      $e = jQuery(elm);
+      pos = $e.position();
+      l = pos.left + this.CIRCLE_RADIUS * 2 * this.scale + 30;
+      t = pos.top + this.CIRCLE_RADIUS * this.scale - 30;
+      return this.$point_info.addClass('show').css({
+        'left': l,
+        'top': t
+      });
+    };
+
+    KnowledgeNetGraph.prototype.hide_point_info = function() {
+      return this.$point_info.removeClass('show');
+    };
+
     KnowledgeNetGraph.prototype._bar_events = function() {
       this.$scale_minus.on('click', this.__zoomout);
       return this.$scale_plus.on('click', this.__zoomin);
@@ -118,7 +145,8 @@
       g = this.zoom_transition ? this.graph.transition() : this.graph;
       this.zoom_transition = false;
       g.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
-      return this.$scale.text("" + (Math.round(scale * 100)) + " %");
+      this.$scale.text("" + (Math.round(scale * 100)) + " %");
+      return this.scale = scale;
     };
 
     KnowledgeNetGraph.prototype.__set_text_class = function(scale) {
@@ -157,7 +185,7 @@
         }
       });
       this.circles = this.nodes.append('circle').attr({
-        'r': 15,
+        'r': this.CIRCLE_RADIUS,
         'class': (function(_this) {
           return function(d) {
             var klass;
@@ -224,17 +252,19 @@
         links = that.links.filter(function(d1) {
           return d1.target.id === d.id;
         });
-        return links.attr({
+        links.attr({
           'class': 'link hover'
         });
+        return that.show_point_info(d, this);
       }).on('mouseout', function(d) {
         var links;
         links = that.links.filter(function(d1) {
           return d1.target.id === d.id;
         });
-        return links.attr({
+        links.attr({
           'class': 'link'
         });
+        return that.hide_point_info();
       }).on('click', function(d) {});
     };
 
