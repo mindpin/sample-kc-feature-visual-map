@@ -174,7 +174,12 @@ body.sample {
     }
 
     p {
-      margin-bottom:0;
+      // margin-bottom:0;
+    }
+
+    span.depend-count {
+      font-weight:bold;
+      color: darken($area-hot, 10%);
     }
 
     // display:none;
@@ -235,20 +240,31 @@ body.sample {
         // &:hover { fill: #FFB43B; }
       }
 
+      &.depend {
+        fill: #FFB43B;
+        stroke: #FFB43B;
+      }
+
       &:hover {
         stroke: mix(red, #FFB43B, 50%);
         stroke-width: 7px;
+        fill: mix(red, #FFB43B, 50%);
       }
     }
   }
 
-  path.link {
+  .link {
     fill: none;
     stroke: darken(#6F7B7E, 10%);
     stroke-width: 3px;
 
-    &.hover {
+    &.direct-depend {
       stroke: mix(red, #FFB43B, 50%);
+      stroke-width: 7px;
+    }
+
+    &.depend {
+      stroke: #FFB43B;
       stroke-width: 5px;
     }
   }

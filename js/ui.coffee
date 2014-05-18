@@ -124,15 +124,30 @@ class KnowledgeNetGraph
       .html """
               <h3>创建数组</h3>
               <p>允许的字符的集合</p>
+              <div>
+                <span class='depend'>前置知识点：</span>
+                <span class='depend-count'></span>
+              </div>
             """
       .appendTo @$paper
 
-  show_point_info: (point, elm)->
+  show_point_info: (point, elm, direct_depend_count, indirect_depend_count)->
     name = point.name
     desc = point.desc
 
     @$point_info.find('h3').html name
     @$point_info.find('p').html desc
+
+    dc = direct_depend_count + indirect_depend_count
+
+    if dc is 0
+      @$point_info.find('span.depend').hide()
+      @$point_info.find('span.depend-count')
+        .html '这是起始知识点'
+    else
+      @$point_info.find('span.depend').show()
+      @$point_info.find('span.depend-count')
+        .html dc
 
     $e = jQuery(elm)
 
@@ -285,9 +300,11 @@ class KnowledgeNetGraph
 
   _init_pos: ->
     first_node = @tree_data.roots[0]
-    @offset_x = - first_node.x + @$elm.width() / 3
+    @offset_x = - first_node.x + @$elm.width() * 0.4
     
-    @zoom_behavior.event @svg
+    @zoom_behavior
+      .scale 0.75
+      .event @svg
 
   _events: ->
     that = @
@@ -295,20 +312,52 @@ class KnowledgeNetGraph
       .on 'mouseover', (d, i)->
         # d is data object
         # this is dom
-        links = that.links.filter (d1)->
-          d1.target.id is d.id
+
+        # 标记直接依赖节点
+        links = that.links.filter (link)->
+          link.target.id is d.id
 
         links.attr
-          'class': 'link hover'
+          'class': 'link direct-depend'
 
-        that.show_point_info(d, this)
+        # 标记间接依赖节点
+        d0 = that.knet.find_by d.id
+        stack = d0.parents.map (id)-> that.knet.find_by id
+        depend_point_ids = []
+
+        while stack.length > 0
+          dr = stack.shift()
+          for id in dr.parents
+            parent = that.knet.find_by id
+            stack.push parent
+            depend_point_ids.push parent.id unless parent.id in depend_point_ids
+
+          that.links
+            .filter (link)->
+              link.target.id is dr.id
+            .attr
+              'class': 'link depend'
+
+        # 高亮间接依赖节点
+        that.circles
+          .filter (c)->
+            c.id in depend_point_ids or c.id in d0.parents
+          .attr
+            'class': (d)->
+              return 'start-point' if d.depth is 1
+              return 'depend'
+
+        direct_depend_count = links[0].length
+
+        that.show_point_info(d, this, direct_depend_count, depend_point_ids.length)
 
       .on 'mouseout', (d)->
-        links = that.links.filter (d1)->
-          d1.target.id is d.id
-
-        links.attr
+        that.links.attr
           'class': 'link'
+
+        that.circles.attr
+          'class': (d)->
+            return 'start-point' if d.depth is 1
 
         that.hide_point_info()
 

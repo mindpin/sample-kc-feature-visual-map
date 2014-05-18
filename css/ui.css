@@ -2942,8 +2942,9 @@ body.sample .page-content .graph-paper {
       font-size: 16px;
       color: #222;
       font-weight: bold; }
-    .knowledge-net-paper .point-info p {
-      margin-bottom: 0; }
+    .knowledge-net-paper .point-info span.depend-count {
+      font-weight: bold;
+      color: #cc3600; }
     .knowledge-net-paper .point-info.show {
       display: block;
       opacity: 1;
@@ -2984,13 +2985,20 @@ body.sample .page-content .graph-paper {
     cursor: pointer; }
     .knowledge-net-paper svg.knsvg g.node circle.start-point {
       stroke: #FFB43B; }
+    .knowledge-net-paper svg.knsvg g.node circle.depend {
+      fill: #FFB43B;
+      stroke: #FFB43B; }
     .knowledge-net-paper svg.knsvg g.node circle:hover {
       stroke: #ff5a1d;
-      stroke-width: 7px; }
-  .knowledge-net-paper svg.knsvg path.link {
+      stroke-width: 7px;
+      fill: #ff5a1d; }
+  .knowledge-net-paper svg.knsvg .link {
     fill: none;
     stroke: #576163;
     stroke-width: 3px; }
-    .knowledge-net-paper svg.knsvg path.link.hover {
+    .knowledge-net-paper svg.knsvg .link.direct-depend {
       stroke: #ff5a1d;
+      stroke-width: 7px; }
+    .knowledge-net-paper svg.knsvg .link.depend {
+      stroke: #FFB43B;
       stroke-width: 5px; }
