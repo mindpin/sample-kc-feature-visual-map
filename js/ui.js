@@ -15,25 +15,39 @@
   Zoomer = (function() {
     function Zoomer(host) {
       this.host = host;
+      this.zoomed = __bind(this.zoomed, this);
       this.zoomin = __bind(this.zoomin, this);
       this.zoomout = __bind(this.zoomout, this);
-      this.zoom_behavior = this.host.zoom_behavior;
+      this.zoom_transition = false;
     }
 
     Zoomer.prototype.zoomout = function() {
       var new_scale, scale;
-      scale = this.zoom_behavior.scale();
+      scale = this.host.zoom_behavior.scale();
       new_scale = scale > 1.414 ? 1.414 : scale > 1 ? 1 : scale > 0.707 ? 0.707 : scale > 0.5 ? 0.5 : scale > 0.354 ? 0.354 : 0.25;
-      this.host.zoom_transition = true;
-      return this.zoom_behavior.scale(new_scale).event(this.host.svg);
+      this.zoom_transition = true;
+      return this.host.zoom_behavior.scale(new_scale).event(this.host.svg);
     };
 
     Zoomer.prototype.zoomin = function() {
       var new_scale, scale;
-      scale = this.zoom_behavior.scale();
+      scale = this.host.zoom_behavior.scale();
       new_scale = scale < 0.354 ? 0.354 : scale < 0.5 ? 0.5 : scale < 0.707 ? 0.707 : scale < 1 ? 1 : scale < 1.414 ? 1.414 : 2;
-      this.host.zoom_transition = true;
-      return this.zoom_behavior.scale(new_scale).event(this.host.svg);
+      this.zoom_transition = true;
+      return this.host.zoom_behavior.scale(new_scale).event(this.host.svg);
+    };
+
+    Zoomer.prototype.zoomed = function() {
+      var g, scale, translate;
+      scale = this.host.zoom_behavior.scale();
+      translate = this.host.zoom_behavior.translate();
+      this.host.__set_text_class(scale);
+      g = this.zoom_transition ? this.host.graph.transition() : this.host.graph;
+      this.zoom_transition = false;
+      g.attr('transform', "translate(" + (translate[0] + this.host.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
+      this.host.$scale.text("" + (Math.round(scale * 100)) + " %");
+      this.host.scale = scale;
+      return this.host.hide_point_info();
     };
 
     return Zoomer;
@@ -45,7 +59,6 @@
       var _ref;
       this.$elm = $elm;
       this.data = data;
-      this.__zoom = __bind(this.__zoom, this);
       this.$paper = jQuery('<div></div>').addClass('knowledge-net-paper').appendTo(this.$elm);
       this.SCALE = [0.25, 2];
       this.CIRCLE_RADIUS = 15;
@@ -151,23 +164,10 @@
     };
 
     KnowledgeNetGraph.prototype._svg = function() {
-      this.zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).center([this.$elm.width() / 2, this.$elm.height() / 2]).on('zoom', this.__zoom);
+      this.zoomer = new Zoomer(this);
+      this.zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).center([this.$elm.width() / 2, this.$elm.height() / 2]).on('zoom', this.zoomer.zoomed);
       this.svg = d3.select(this.$paper[0]).append('svg').attr('class', 'knsvg').call(this.zoom_behavior).on('dblclick.zoom', null);
-      this.graph = this.svg.append('g');
-      return this.zoomer = new Zoomer(this);
-    };
-
-    KnowledgeNetGraph.prototype.__zoom = function() {
-      var g, scale, translate;
-      scale = this.zoom_behavior.scale();
-      translate = this.zoom_behavior.translate();
-      this.__set_text_class(scale);
-      g = this.zoom_transition ? this.graph.transition() : this.graph;
-      this.zoom_transition = false;
-      g.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
-      this.$scale.text("" + (Math.round(scale * 100)) + " %");
-      this.scale = scale;
-      return this.hide_point_info();
+      return this.graph = this.svg.append('g');
     };
 
     KnowledgeNetGraph.prototype.__set_text_class = function(scale) {

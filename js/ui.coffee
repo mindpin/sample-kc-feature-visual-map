@@ -6,11 +6,11 @@ jQuery ->
 
 class Zoomer
   constructor: (@host)->
-    @zoom_behavior = @host.zoom_behavior
+    @zoom_transition = false
 
   # 缩小
   zoomout: =>
-    scale = @zoom_behavior.scale()
+    scale = @host.zoom_behavior.scale()
     
     new_scale = 
     if scale > 1.414 then 1.414
@@ -20,12 +20,12 @@ class Zoomer
     else if scale > 0.354 then 0.354
     else 0.25
 
-    @host.zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @host.svg
+    @zoom_transition = true
+    @host.zoom_behavior.scale(new_scale).event @host.svg
 
   # 放大
   zoomin: =>
-    scale = @zoom_behavior.scale()
+    scale = @host.zoom_behavior.scale()
     
     new_scale = 
     if scale < 0.354      then 0.354
@@ -35,8 +35,30 @@ class Zoomer
     else if scale < 1.414 then 1.414
     else 2
 
-    @host.zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @host.svg
+    @zoom_transition = true
+    @host.zoom_behavior.scale(new_scale).event @host.svg
+
+  zoomed: =>
+    scale     = @host.zoom_behavior.scale()
+    translate = @host.zoom_behavior.translate()
+    @host.__set_text_class scale
+
+    g = 
+      if @zoom_transition 
+      then @host.graph.transition() 
+      else @host.graph
+    @zoom_transition = false
+
+    g
+      .attr 'transform',
+        "translate(#{translate[0] + @host.offset_x * scale}, #{translate[1]})
+        scale(#{scale})"
+
+    @host.$scale.text "#{Math.round(scale * 100)} %"
+    @host.scale = scale
+
+    # bugfix for phone
+    @host.hide_point_info()
 
 
 class KnowledgeNetGraph
@@ -206,12 +228,13 @@ class KnowledgeNetGraph
     @$scale_minus.on 'click', @zoomer.zoomout
     @$scale_plus.on 'click', @zoomer.zoomin
 
-
   _svg: ->
+    @zoomer = new Zoomer @
+
     @zoom_behavior = d3.behavior.zoom()
       .scaleExtent @SCALE
       .center [@$elm.width() / 2, @$elm.height() / 2]
-      .on 'zoom', @__zoom
+      .on 'zoom', @zoomer.zoomed
 
     @svg = d3.select @$paper[0]
       .append 'svg'
@@ -221,26 +244,6 @@ class KnowledgeNetGraph
 
     @graph = @svg.append('g')
 
-    @zoomer = new Zoomer @
-
-  __zoom: =>
-    scale = @zoom_behavior.scale()
-    translate = @zoom_behavior.translate()
-    @__set_text_class scale
-
-    g = if @zoom_transition then @graph.transition() else @graph
-    @zoom_transition = false
-
-    g
-      .attr 'transform',
-        "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
-        scale(#{scale})"
-
-    @$scale.text "#{Math.round(scale * 100)} %"
-    @scale = scale
-
-    # bugfix for phone
-    @hide_point_info()
 
   __set_text_class: (scale)->
     klass = ['name']
