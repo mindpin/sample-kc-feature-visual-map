@@ -136,10 +136,12 @@ class KnowledgeNetGraph
     @$point_info.find('p').html desc
 
     $e = jQuery(elm)
-    pos = $e.position()
 
-    l = pos.left + @CIRCLE_RADIUS * 2 * @scale + 30
-    t = pos.top + @CIRCLE_RADIUS * @scale - 30
+    o = $e.offset()
+    o1 = @$paper.offset()
+
+    l = o.left - o1.left + @CIRCLE_RADIUS * 2 * @scale + 30
+    t = o.top - o1.top + @CIRCLE_RADIUS * @scale - 30
 
     @$point_info
       .addClass 'show'

@@ -91,15 +91,16 @@
     };
 
     KnowledgeNetGraph.prototype.show_point_info = function(point, elm) {
-      var $e, desc, l, name, pos, t;
+      var $e, desc, l, name, o, o1, t;
       name = point.name;
       desc = point.desc;
       this.$point_info.find('h3').html(name);
       this.$point_info.find('p').html(desc);
       $e = jQuery(elm);
-      pos = $e.position();
-      l = pos.left + this.CIRCLE_RADIUS * 2 * this.scale + 30;
-      t = pos.top + this.CIRCLE_RADIUS * this.scale - 30;
+      o = $e.offset();
+      o1 = this.$paper.offset();
+      l = o.left - o1.left + this.CIRCLE_RADIUS * 2 * this.scale + 30;
+      t = o.top - o1.top + this.CIRCLE_RADIUS * this.scale - 30;
       return this.$point_info.addClass('show').css({
         'left': l,
         'top': t
