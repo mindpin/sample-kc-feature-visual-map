@@ -2802,13 +2802,6 @@ body.sample .page-content .graph-paper {
     width: 200px;
     z-index: 1;
     padding: 10px; }
-    @media (max-width: 991px) {
-      .knowledge-net-paper .bar {
-        -webkit-transform: scale(0.5) translate(-50%, -50%);
-        -moz-transform: scale(0.5) translate(-50%, -50%);
-        -ms-transform: scale(0.5) translate(-50%, -50%);
-        -o-transform: scale(0.5) translate(-50%, -50%);
-        transform: scale(0.5) translate(-50%, -50%); } }
     .knowledge-net-paper .bar .scale {
       float: left;
       height: 40px;
@@ -2904,6 +2897,24 @@ body.sample .page-content .graph-paper {
       clear: both;
       margin-top: 10px;
       border-radius: 3px; }
+    @media (max-width: 991px) {
+      .knowledge-net-paper .bar {
+        width: 410px;
+        -webkit-transform: scale(0.5) translate(-50%, -50%);
+        -moz-transform: scale(0.5) translate(-50%, -50%);
+        -ms-transform: scale(0.5) translate(-50%, -50%);
+        -o-transform: scale(0.5) translate(-50%, -50%);
+        transform: scale(0.5) translate(-50%, -50%); }
+        .knowledge-net-paper .bar .count-pie {
+          float: right;
+          margin-top: -140px;
+          height: 140px; }
+          .knowledge-net-paper .bar .count-pie svg {
+            -webkit-transform: scale(0.7) translate(0, -40px);
+            -moz-transform: scale(0.7) translate(0, -40px);
+            -ms-transform: scale(0.7) translate(0, -40px);
+            -o-transform: scale(0.7) translate(0, -40px);
+            transform: scale(0.7) translate(0, -40px); } }
   .knowledge-net-paper .point-info {
     width: 160px;
     -webkit-box-sizing: border-box;
