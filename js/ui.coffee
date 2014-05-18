@@ -119,24 +119,14 @@ class KnowledgeNetGraph
       .attr
         'y': 45
         'text-anchor': 'middle'
-
-    console.log @name_texts
-
-    that = @
-    @name_texts.attr '', (d, i)->
-      sub = that.name_texts.filter (d1, j)-> i is j
-
-      for str, j in KnowledgeNet.break_text(d.name)
-        dy = if j is 0 then '0' else '1.5em'
-
-        sub
-          .append 'tspan'
-          .attr
-            'x': 0
-            'dy': dy
-          .text str
-
-      null
+      .each (d, i)->
+        for str, j in KnowledgeNet.break_text(d.name)
+          dy = if j is 0 then '0' else '1.5em'
+          d3.select(this).append 'tspan'
+            .attr
+              'x': 0
+              'dy': dy
+            .text str
 
     @__set_text_class(1)
 

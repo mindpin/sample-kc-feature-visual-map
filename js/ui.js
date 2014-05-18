@@ -90,7 +90,6 @@
     };
 
     KnowledgeNetGraph.prototype._nodes = function() {
-      var that;
       this.nodes = this.graph.selectAll('.node').data(this.nodes).enter().append('g').attr({
         'class': 'node',
         'transform': function(d) {
@@ -116,24 +115,19 @@
       this.name_texts = this.nodes.append('text').attr({
         'y': 45,
         'text-anchor': 'middle'
-      });
-      console.log(this.name_texts);
-      that = this;
-      this.name_texts.attr('', function(d, i) {
-        var dy, j, str, sub, _i, _len, _ref;
-        sub = that.name_texts.filter(function(d1, j) {
-          return i === j;
-        });
+      }).each(function(d, i) {
+        var dy, j, str, _i, _len, _ref, _results;
         _ref = KnowledgeNet.break_text(d.name);
+        _results = [];
         for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
           str = _ref[j];
           dy = j === 0 ? '0' : '1.5em';
-          sub.append('tspan').attr({
+          _results.push(d3.select(this).append('tspan').attr({
             'x': 0,
             'dy': dy
-          }).text(str);
+          }).text(str));
         }
-        return null;
+        return _results;
       });
       return this.__set_text_class(1);
     };
