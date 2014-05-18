@@ -6,11 +6,23 @@ jQuery ->
 
 class Zoomer
   constructor: (@host)->
+    @SCALE = [0.25, 2]
+
+    @scale = 1
     @zoom_transition = false
+
+    @viewport_w = @host.$elm.width()
+    @viewport_h = @host.$elm.height()
+
+    @zoom_behavior = d3.behavior.zoom()
+      .scaleExtent @SCALE
+      .center [@viewport_w / 2, @viewport_h / 2]
+      .on 'zoom', @zoomed
 
   # 缩小
   zoomout: =>
-    scale = @host.zoom_behavior.scale()
+    scale = @zoom_behavior.scale()
+    translate = @zoom_behavior.translate()
     
     new_scale = 
     if scale > 1.414 then 1.414
@@ -21,11 +33,14 @@ class Zoomer
     else 0.25
 
     @zoom_transition = true
-    @host.zoom_behavior.scale(new_scale).event @host.svg
+    @zoom_behavior
+      .scale new_scale
+      .event @host.svg
 
   # 放大
   zoomin: =>
-    scale = @host.zoom_behavior.scale()
+    scale = @zoom_behavior.scale()
+    translate = @zoom_behavior.translate()
     
     new_scale = 
     if scale < 0.354      then 0.354
@@ -36,29 +51,18 @@ class Zoomer
     else 2
 
     @zoom_transition = true
-    @host.zoom_behavior.scale(new_scale).event @host.svg
+    @zoom_behavior
+      .scale new_scale
+      .event @host.svg
 
   zoomed: =>
-    scale     = @host.zoom_behavior.scale()
-    translate = @host.zoom_behavior.translate()
-    @host.__set_text_class scale
+    @scale     = @zoom_behavior.scale()
+    @translate = @zoom_behavior.translate()
 
-    g = 
-      if @zoom_transition 
-      then @host.graph.transition() 
-      else @host.graph
+    console.log @scale, @translate
+
+    @host.deal_zoom(@scale, @translate, @zoom_transition)
     @zoom_transition = false
-
-    g
-      .attr 'transform',
-        "translate(#{translate[0] + @host.offset_x * scale}, #{translate[1]})
-        scale(#{scale})"
-
-    @host.$scale.text "#{Math.round(scale * 100)} %"
-    @host.scale = scale
-
-    # bugfix for phone
-    @host.hide_point_info()
 
 
 class KnowledgeNetGraph
@@ -67,16 +71,12 @@ class KnowledgeNetGraph
       .addClass 'knowledge-net-paper'
       .appendTo @$elm
 
-    @SCALE = [0.25, 2]
-
     @CIRCLE_RADIUS = 15
 
     [@NODE_WIDTH, @NODE_HEIGHT] = [150, 180]
 
     @offset_x = 0
     @offset_y = 0
-
-    @scale = 1
 
     @knet = new KnowledgeNet @data
 
@@ -94,6 +94,25 @@ class KnowledgeNetGraph
     @_bar_events()
 
     @_init_pos()
+
+
+  deal_zoom: (scale, translate, transition)->
+    g = 
+      if transition
+      then @graph.transition() 
+      else @graph
+
+    tx = translate[0] + @offset_x * scale
+    ty = translate[1]
+
+    g.attr 'transform', 
+      "translate(#{tx}, #{ty})scale(#{scale})"
+
+    @__set_text_class scale
+    @$scale.text "#{Math.round(scale * 100)} %"
+    # bugfix for phone
+    @hide_point_info()
+
 
   _bar: ->
     @__bar_zoom()
@@ -211,8 +230,8 @@ class KnowledgeNetGraph
     o = $e.offset()
     o1 = @$paper.offset()
 
-    l = o.left - o1.left + @CIRCLE_RADIUS * 2 * @scale + 30
-    t = o.top - o1.top + @CIRCLE_RADIUS * @scale - 30
+    l = o.left - o1.left + @CIRCLE_RADIUS * 2 * @zoomer.scale + 30
+    t = o.top - o1.top + @CIRCLE_RADIUS * @zoomer.scale - 30
 
     @$point_info
       .addClass 'show'
@@ -231,15 +250,10 @@ class KnowledgeNetGraph
   _svg: ->
     @zoomer = new Zoomer @
 
-    @zoom_behavior = d3.behavior.zoom()
-      .scaleExtent @SCALE
-      .center [@$elm.width() / 2, @$elm.height() / 2]
-      .on 'zoom', @zoomer.zoomed
-
     @svg = d3.select @$paper[0]
       .append 'svg'
         .attr 'class', 'knsvg'
-        .call @zoom_behavior
+        .call @zoomer.zoom_behavior
         .on 'dblclick.zoom', null
 
     @graph = @svg.append('g')
@@ -313,7 +327,7 @@ class KnowledgeNetGraph
     first_node = @tree_data.roots[0]
     @offset_x = - first_node.x + @$elm.width() * 0.4
     
-    @zoom_behavior
+    @zoomer.zoom_behavior
       .scale 0.75
       .event @svg
 
