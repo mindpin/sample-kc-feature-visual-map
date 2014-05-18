@@ -239,14 +239,14 @@ class KnowledgeNetGraph
       name: @IMAGINARY_ROOT_NAME
       children: @tree_data.roots
 
-    @tree = d3.layout.tree()
+    tree = d3.layout.tree()
       .nodeSize [@NODE_WIDTH, @NODE_HEIGHT]
 
-    @nodes = @tree.nodes imarginay_root
+    @tree_nodes = tree.nodes imarginay_root
 
   _nodes: ->
     @nodes = @graph.selectAll('.node')
-      .data @nodes
+      .data @tree_nodes
       .enter()
       .append 'g'
       .attr

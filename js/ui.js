@@ -169,18 +169,18 @@
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
-      var imarginay_root;
+      var imarginay_root, tree;
       this.tree_data = this.knet.get_tree_nesting_data();
       imarginay_root = {
         name: this.IMAGINARY_ROOT_NAME,
         children: this.tree_data.roots
       };
-      this.tree = d3.layout.tree().nodeSize([this.NODE_WIDTH, this.NODE_HEIGHT]);
-      return this.nodes = this.tree.nodes(imarginay_root);
+      tree = d3.layout.tree().nodeSize([this.NODE_WIDTH, this.NODE_HEIGHT]);
+      return this.tree_nodes = tree.nodes(imarginay_root);
     };
 
     KnowledgeNetGraph.prototype._nodes = function() {
-      this.nodes = this.graph.selectAll('.node').data(this.nodes).enter().append('g').attr({
+      this.nodes = this.graph.selectAll('.node').data(this.tree_nodes).enter().append('g').attr({
         'class': 'node',
         'transform': function(d) {
           return "translate(" + d.x + ", " + d.y + ")";
