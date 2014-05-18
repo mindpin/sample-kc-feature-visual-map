@@ -217,6 +217,9 @@ class KnowledgeNetGraph
     @$scale.text "#{Math.round(scale * 100)} %"
     @scale = scale
 
+    # bugfix for phone
+    @hide_point_info()
+
   __set_text_class: (scale)->
     klass = ['name']
     if scale < 0.75

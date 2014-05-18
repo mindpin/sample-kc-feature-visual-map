@@ -147,7 +147,8 @@
       this.zoom_transition = false;
       g.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
       this.$scale.text("" + (Math.round(scale * 100)) + " %");
-      return this.scale = scale;
+      this.scale = scale;
+      return this.hide_point_info();
     };
 
     KnowledgeNetGraph.prototype.__set_text_class = function(scale) {
