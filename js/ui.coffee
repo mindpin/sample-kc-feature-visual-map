@@ -12,7 +12,6 @@ class KnowledgeNetGraph
 
     @SCALE = [0.25, 2]
     @IMAGINARY_ROOT_NAME = 'IROOT'
-    @BASE_OFFSET_X = 300
 
     [@NODE_WIDTH, @NODE_HEIGHT] = [150, 180]
 
@@ -25,16 +24,22 @@ class KnowledgeNetGraph
 
 
   draw: ->
-    @_bar()
-
     @_svg()
     @_tree()
     @_links()
     @_nodes()
-
     @_events()
 
+    @_bar()
+    @_bar_events()
+
+    @_init_pos()
+
   _bar: ->
+    @__bar_zoom()
+    @__bar_count()
+
+  __bar_zoom: ->
     @$bar = jQuery '<div></div>'
       .addClass 'bar'
       .appendTo @$paper
@@ -44,27 +49,132 @@ class KnowledgeNetGraph
       .text '100 %'
       .appendTo @$bar
 
+    @$scale_minus = jQuery '<div></div>'
+      .addClass 'scale-minus'
+      .html "<i class='fa fa-minus'></i>"
+      .appendTo @$bar
+
+    @$scale_plus = jQuery '<div></div>'
+      .addClass 'scale-plus'
+      .html "<i class='fa fa-plus'></i>"
+      .appendTo @$bar
+
+  __bar_count: ->
+    start_count = @knet.roots().length
+    common_count = @knet.points().length - start_count
+
+    @$start_point_count = jQuery '<div></div>'
+      .addClass 'start-points-count'
+      .html """
+              <span>起始知识点</span>
+              <span class='count'>#{start_count}</span>
+            """
+      .appendTo @$bar
+
+    @$start_point_count = jQuery '<div></div>'
+      .addClass 'common-points-count'
+      .html """
+              <span>一般知识点</span>
+              <span class='count'>#{common_count}</span>
+            """
+      .appendTo @$bar
+
+    @$count_pie = jQuery '<div></div>'
+      .addClass 'count-pie'
+      .appendTo @$bar
+
+    w = 150
+    h = 150
+    outer_radius = w / 2
+    inner_radius = w / 2.666
+    arc = d3.svg.arc()
+      .innerRadius(inner_radius)
+      .outerRadius(outer_radius)
+
+    svg = d3.select @$count_pie[0]
+      .append 'svg'
+      .attr
+        'width': w
+        'height': h
+      .style
+        'margin': '25px 0 0 25px'
+
+    arcs = svg.selectAll 'g.arc'
+      .data d3.layout.pie()([start_count, common_count])
+      .enter()
+      .append 'g'
+      .attr
+        'class': 'arc'
+        'transform': "translate(#{outer_radius}, #{outer_radius})"
+
+    colors = ['#FFB43B', '#65B2EF']
+
+    arcs.append 'path'
+      .attr
+        'fill': (d, i)-> colors[i]
+        'd': arc
+
+
+  _bar_events: ->
+    @$scale_minus.on 'click', @__zoomout
+    @$scale_plus.on 'click', @__zoomin
+
+  # 缩小
+  __zoomout: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale > 1.414 then 1.414
+    else if scale > 1     then 1
+    else if scale > 0.707 then 0.707
+    else if scale > 0.5   then 0.5
+    else if scale > 0.354 then 0.354
+    else 0.25
+
+    @zoom_transition = true
+    @zoom_behavior.scale(new_scale).event @svg
+
+  # 放大
+  __zoomin: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale < 0.354      then 0.354
+    else if scale < 0.5   then 0.5
+    else if scale < 0.707 then 0.707
+    else if scale < 1     then 1
+    else if scale < 1.414 then 1.414
+    else 2
+
+    @zoom_transition = true
+    @zoom_behavior.scale(new_scale).event @svg
+
   _svg: ->
-    zoom_behavior = d3.behavior.zoom()
+    @zoom_behavior = d3.behavior.zoom()
       .scaleExtent @SCALE
+      .center [@$elm.width() / 2, @$elm.height() / 2]
       .on 'zoom', @__zoom
 
     @svg = d3.select @$paper[0]
       .append 'svg'
         .attr 'class', 'knsvg'
-        .call zoom_behavior
+        .call @zoom_behavior
         .on 'dblclick.zoom', null
 
     @graph = @svg.append('g')
 
   __zoom: =>
-    scale = d3.event.scale
-    translate = d3.event.translate
+    scale = @zoom_behavior.scale()
+    translate = @zoom_behavior.translate()
     @__set_text_class scale
 
-    @graph.attr 'transform',
-      "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
-       scale(#{scale})"
+    g = if @zoom_transition then @graph.transition() else @graph
+    @zoom_transition = false
+
+    g
+      .attr 'transform',
+        "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
+        scale(#{scale})"
 
     @$scale.text "#{Math.round(scale * 100)} %"
 
@@ -91,10 +201,6 @@ class KnowledgeNetGraph
       .nodeSize [@NODE_WIDTH, @NODE_HEIGHT]
 
     @nodes = @tree.nodes imarginay_root
-
-    first_node = @tree_data.roots[0]
-    @offset_x = - first_node.x + @BASE_OFFSET_X
-    @graph.attr 'transform', "translate(#{@offset_x}, 0)"
 
   _nodes: ->
     @nodes = @graph.selectAll('.node')
@@ -142,6 +248,12 @@ class KnowledgeNetGraph
         'd': d3.svg.diagonal()
         'class': (d)=>
           if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'
+
+  _init_pos: ->
+    first_node = @tree_data.roots[0]
+    @offset_x = - first_node.x + @$elm.width() / 3
+    
+    @zoom_behavior.event @svg
 
   _events: ->
     that = @

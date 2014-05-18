@@ -17,10 +17,11 @@
       this.$elm = $elm;
       this.data = data;
       this.__zoom = __bind(this.__zoom, this);
+      this.__zoomin = __bind(this.__zoomin, this);
+      this.__zoomout = __bind(this.__zoomout, this);
       this.$paper = jQuery('<div></div>').addClass('knowledge-net-paper').appendTo(this.$elm);
       this.SCALE = [0.25, 2];
       this.IMAGINARY_ROOT_NAME = 'IROOT';
-      this.BASE_OFFSET_X = 300;
       _ref = [150, 180], this.NODE_WIDTH = _ref[0], this.NODE_HEIGHT = _ref[1];
       this.offset_x = 0;
       this.offset_y = 0;
@@ -29,32 +30,94 @@
     }
 
     KnowledgeNetGraph.prototype.draw = function() {
-      this._bar();
       this._svg();
       this._tree();
       this._links();
       this._nodes();
-      return this._events();
+      this._events();
+      this._bar();
+      this._bar_events();
+      return this._init_pos();
     };
 
     KnowledgeNetGraph.prototype._bar = function() {
+      this.__bar_zoom();
+      return this.__bar_count();
+    };
+
+    KnowledgeNetGraph.prototype.__bar_zoom = function() {
       this.$bar = jQuery('<div></div>').addClass('bar').appendTo(this.$paper);
-      return this.$scale = jQuery('<div></div>').addClass('scale').text('100 %').appendTo(this.$bar);
+      this.$scale = jQuery('<div></div>').addClass('scale').text('100 %').appendTo(this.$bar);
+      this.$scale_minus = jQuery('<div></div>').addClass('scale-minus').html("<i class='fa fa-minus'></i>").appendTo(this.$bar);
+      return this.$scale_plus = jQuery('<div></div>').addClass('scale-plus').html("<i class='fa fa-plus'></i>").appendTo(this.$bar);
+    };
+
+    KnowledgeNetGraph.prototype.__bar_count = function() {
+      var arc, arcs, colors, common_count, h, inner_radius, outer_radius, start_count, svg, w;
+      start_count = this.knet.roots().length;
+      common_count = this.knet.points().length - start_count;
+      this.$start_point_count = jQuery('<div></div>').addClass('start-points-count').html("<span>起始知识点</span>\n<span class='count'>" + start_count + "</span>").appendTo(this.$bar);
+      this.$start_point_count = jQuery('<div></div>').addClass('common-points-count').html("<span>一般知识点</span>\n<span class='count'>" + common_count + "</span>").appendTo(this.$bar);
+      this.$count_pie = jQuery('<div></div>').addClass('count-pie').appendTo(this.$bar);
+      w = 150;
+      h = 150;
+      outer_radius = w / 2;
+      inner_radius = w / 2.666;
+      arc = d3.svg.arc().innerRadius(inner_radius).outerRadius(outer_radius);
+      svg = d3.select(this.$count_pie[0]).append('svg').attr({
+        'width': w,
+        'height': h
+      }).style({
+        'margin': '25px 0 0 25px'
+      });
+      arcs = svg.selectAll('g.arc').data(d3.layout.pie()([start_count, common_count])).enter().append('g').attr({
+        'class': 'arc',
+        'transform': "translate(" + outer_radius + ", " + outer_radius + ")"
+      });
+      colors = ['#FFB43B', '#65B2EF'];
+      return arcs.append('path').attr({
+        'fill': function(d, i) {
+          return colors[i];
+        },
+        'd': arc
+      });
+    };
+
+    KnowledgeNetGraph.prototype._bar_events = function() {
+      this.$scale_minus.on('click', this.__zoomout);
+      return this.$scale_plus.on('click', this.__zoomin);
+    };
+
+    KnowledgeNetGraph.prototype.__zoomout = function() {
+      var new_scale, scale;
+      scale = this.zoom_behavior.scale();
+      new_scale = scale > 1.414 ? 1.414 : scale > 1 ? 1 : scale > 0.707 ? 0.707 : scale > 0.5 ? 0.5 : scale > 0.354 ? 0.354 : 0.25;
+      this.zoom_transition = true;
+      return this.zoom_behavior.scale(new_scale).event(this.svg);
+    };
+
+    KnowledgeNetGraph.prototype.__zoomin = function() {
+      var new_scale, scale;
+      scale = this.zoom_behavior.scale();
+      new_scale = scale < 0.354 ? 0.354 : scale < 0.5 ? 0.5 : scale < 0.707 ? 0.707 : scale < 1 ? 1 : scale < 1.414 ? 1.414 : 2;
+      this.zoom_transition = true;
+      return this.zoom_behavior.scale(new_scale).event(this.svg);
     };
 
     KnowledgeNetGraph.prototype._svg = function() {
-      var zoom_behavior;
-      zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).on('zoom', this.__zoom);
-      this.svg = d3.select(this.$paper[0]).append('svg').attr('class', 'knsvg').call(zoom_behavior).on('dblclick.zoom', null);
+      this.zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).center([this.$elm.width() / 2, this.$elm.height() / 2]).on('zoom', this.__zoom);
+      this.svg = d3.select(this.$paper[0]).append('svg').attr('class', 'knsvg').call(this.zoom_behavior).on('dblclick.zoom', null);
       return this.graph = this.svg.append('g');
     };
 
     KnowledgeNetGraph.prototype.__zoom = function() {
-      var scale, translate;
-      scale = d3.event.scale;
-      translate = d3.event.translate;
+      var g, scale, translate;
+      scale = this.zoom_behavior.scale();
+      translate = this.zoom_behavior.translate();
       this.__set_text_class(scale);
-      this.graph.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
+      g = this.zoom_transition ? this.graph.transition() : this.graph;
+      this.zoom_transition = false;
+      g.attr('transform', "translate(" + (translate[0] + this.offset_x * scale) + ", " + translate[1] + ") scale(" + scale + ")");
       return this.$scale.text("" + (Math.round(scale * 100)) + " %");
     };
 
@@ -76,17 +139,14 @@
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
-      var first_node, imarginay_root;
+      var imarginay_root;
       this.tree_data = this.knet.get_tree_nesting_data();
       imarginay_root = {
         name: this.IMAGINARY_ROOT_NAME,
         children: this.tree_data.roots
       };
       this.tree = d3.layout.tree().nodeSize([this.NODE_WIDTH, this.NODE_HEIGHT]);
-      this.nodes = this.tree.nodes(imarginay_root);
-      first_node = this.tree_data.roots[0];
-      this.offset_x = -first_node.x + this.BASE_OFFSET_X;
-      return this.graph.attr('transform', "translate(" + this.offset_x + ", 0)");
+      return this.nodes = this.tree.nodes(imarginay_root);
     };
 
     KnowledgeNetGraph.prototype._nodes = function() {
@@ -147,6 +207,13 @@
           };
         })(this)
       });
+    };
+
+    KnowledgeNetGraph.prototype._init_pos = function() {
+      var first_node;
+      first_node = this.tree_data.roots[0];
+      this.offset_x = -first_node.x + this.$elm.width() / 3;
+      return this.zoom_behavior.event(this.svg);
     };
 
     KnowledgeNetGraph.prototype._events = function() {

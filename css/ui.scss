@@ -1,7 +1,7 @@
 @import "../lily/css/lily.scss";
 
 body.sample {
-  $sidebar-width:200px;
+  $sidebar-width:100px;
 
   .page-content {
     .sidebar {
@@ -32,29 +32,114 @@ body.sample {
 .knowledge-net-paper {
   position: absolute;
   top:0;left:0;right:0;bottom:0;
+
+  // $shadow: 1px 1px 1px rgba(black, 0.5);
+  $shadow: none;
+
   .bar {
+    @include unselectable;
     color:white;
     position: absolute;
-    top:0;left:0;right:0;
-    height:50px;
+    top:0;left:0;;
+    width:200px;
     // background-color:#383F41;
     z-index: 1;
+    padding:10px;
+
+    @include -below(pad) {
+      @include transform(scale(0.5) translate(-50%, -50%));
+    }
 
     .scale {
       float: left;
       height: 40px; line-height: 40px;
       @include border-box;
-      // border:solid 1px rgba(#FFB43B, 0.8);
-      margin-top:10px;margin-left:10px;
-      background-color:#38382D;
+      background-color:#383F41;
       width:100px;
       text-align: center;
       border-radius:3px;
-      color:#FFB43B;
       font-size:24px;
       font-weight:bold;
       // font-family: $font-family-serif;
-      pointer-events: none;
+
+      box-shadow:$shadow;
+    }
+
+    .scale-minus, .scale-plus{
+      float: left;
+      height:40px; line-height: 40px;
+      @include border-box;
+      margin-left: 10px;
+      background-color:#383F41;
+      width:40px;
+      border-radius:3px;
+      text-align:center;
+      font-size: 24px;
+      cursor: pointer;
+
+      box-shadow:$shadow;
+
+      @include transition(background-color .1s);
+
+      i {
+        position: relative;top:2px;
+      }
+
+      &:hover {
+        background-color: lighten(#383F41, 10%);
+      }
+    }
+
+    .start-points-count, .common-points-count{
+      float:left;
+      clear:both;
+      height:40px;line-height: 40px;
+      width:200px;
+      margin-top: 10px;
+      background-color: #38382D; //rgba(#FFB43B, 0.1);
+      border-radius:3px;
+      box-shadow:$shadow;
+      @include border-box;
+      color: #FFB43B;
+      text-align:right;
+      position:relative;
+
+      padding-left:60px;
+      span {
+        float:left;
+      }
+      .count {
+        font-size:24px;
+        font-weight:bold;
+        margin-left:20px;
+      }
+      
+      &:before {
+        position:absolute;
+        content: "";
+        width:20px;height:20px;
+        border:solid 4px #FFB43B;
+        border-radius:30px;
+        @include border-box;
+        top:10px;left:20px;
+      }
+    }
+
+    .common-points-count {
+      background-color:#293840;//rgba(#65B2EF, 0.1);
+      color:#65B2EF;
+      &:before{
+        border-color:#65B2EF;
+      }
+    }
+
+    .count-pie {
+      background-color:#293840;
+      width:200px;height:200px;
+      float:left;
+      clear: both;
+      margin-top:10px;
+      border-radius:3px;
     }
   }
 }
@@ -73,12 +158,12 @@ body.sample {
       @include unselectable;
 
       &.hide {
-        opacity: 0;
+        display: none;
         pointer-events: none;
 
-        @include -below(phone) {
+        @include -below(pad) {
+          display: inherit;
           opacity: 0.6;
-          pointer-events: all;
         }
       }
 
