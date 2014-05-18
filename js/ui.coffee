@@ -4,6 +4,41 @@ jQuery ->
     # jQuery.getJSON 'fixture/graph.json', (data)->  
       new KnowledgeNetGraph jQuery('.graph-paper'), data
 
+class Zoomer
+  constructor: (@host)->
+    @zoom_behavior = @host.zoom_behavior
+
+  # 缩小
+  zoomout: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale > 1.414 then 1.414
+    else if scale > 1     then 1
+    else if scale > 0.707 then 0.707
+    else if scale > 0.5   then 0.5
+    else if scale > 0.354 then 0.354
+    else 0.25
+
+    @host.zoom_transition = true
+    @zoom_behavior.scale(new_scale).event @host.svg
+
+  # 放大
+  zoomin: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale < 0.354      then 0.354
+    else if scale < 0.5   then 0.5
+    else if scale < 0.707 then 0.707
+    else if scale < 1     then 1
+    else if scale < 1.414 then 1.414
+    else 2
+
+    @host.zoom_transition = true
+    @zoom_behavior.scale(new_scale).event @host.svg
+
+
 class KnowledgeNetGraph
   constructor: (@$elm, @data)->
     @$paper = jQuery '<div></div>'
@@ -168,38 +203,9 @@ class KnowledgeNetGraph
 
 
   _bar_events: ->
-    @$scale_minus.on 'click', @__zoomout
-    @$scale_plus.on 'click', @__zoomin
+    @$scale_minus.on 'click', @zoomer.zoomout
+    @$scale_plus.on 'click', @zoomer.zoomin
 
-  # 缩小
-  __zoomout: =>
-    scale = @zoom_behavior.scale()
-    
-    new_scale = 
-    if scale > 1.414 then 1.414
-    else if scale > 1     then 1
-    else if scale > 0.707 then 0.707
-    else if scale > 0.5   then 0.5
-    else if scale > 0.354 then 0.354
-    else 0.25
-
-    @zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @svg
-
-  # 放大
-  __zoomin: =>
-    scale = @zoom_behavior.scale()
-    
-    new_scale = 
-    if scale < 0.354      then 0.354
-    else if scale < 0.5   then 0.5
-    else if scale < 0.707 then 0.707
-    else if scale < 1     then 1
-    else if scale < 1.414 then 1.414
-    else 2
-
-    @zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @svg
 
   _svg: ->
     @zoom_behavior = d3.behavior.zoom()
@@ -214,6 +220,8 @@ class KnowledgeNetGraph
         .on 'dblclick.zoom', null
 
     @graph = @svg.append('g')
+
+    @zoomer = new Zoomer @
 
   __zoom: =>
     scale = @zoom_behavior.scale()
