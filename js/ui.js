@@ -21,7 +21,6 @@
       this.__zoomout = __bind(this.__zoomout, this);
       this.$paper = jQuery('<div></div>').addClass('knowledge-net-paper').appendTo(this.$elm);
       this.SCALE = [0.25, 2];
-      this.IMAGINARY_ROOT_NAME = 'IROOT';
       this.CIRCLE_RADIUS = 15;
       _ref = [150, 180], this.NODE_WIDTH = _ref[0], this.NODE_HEIGHT = _ref[1];
       this.offset_x = 0;
@@ -157,30 +156,31 @@
       if (scale < 0.75) {
         klass.push('hide');
       }
-      return this.name_texts.attr('class', (function(_this) {
-        return function(d) {
-          if (d.name === _this.IMAGINARY_ROOT_NAME) {
-            return "iroot " + klass.join(' ');
-          } else {
-            return klass.join(' ');
-          }
-        };
-      })(this));
+      return this.name_texts.attr({
+        'class': klass.join(' ')
+      });
     };
 
     KnowledgeNetGraph.prototype._tree = function() {
       var imarginay_root, tree;
       this.tree_data = this.knet.get_tree_nesting_data();
       imarginay_root = {
-        name: this.IMAGINARY_ROOT_NAME,
         children: this.tree_data.roots
       };
       tree = d3.layout.tree().nodeSize([this.NODE_WIDTH, this.NODE_HEIGHT]);
-      return this.tree_nodes = tree.nodes(imarginay_root);
+      this.dataset_nodes = tree.nodes(imarginay_root).slice(1);
+      return this.dataset_edges = this.tree_data.edges;
+    };
+
+    KnowledgeNetGraph.prototype._links = function() {
+      return this.links = this.graph.selectAll('.link').data(this.dataset_edges).enter().append('path').attr({
+        'd': d3.svg.diagonal(),
+        'class': 'link'
+      });
     };
 
     KnowledgeNetGraph.prototype._nodes = function() {
-      this.nodes = this.graph.selectAll('.node').data(this.tree_nodes).enter().append('g').attr({
+      this.nodes = this.graph.selectAll('.node').data(this.dataset_nodes).enter().append('g').attr({
         'class': 'node',
         'transform': function(d) {
           return "translate(" + d.x + ", " + d.y + ")";
@@ -192,9 +192,6 @@
           return function(d) {
             var klass;
             klass = [];
-            if (d.name === _this.IMAGINARY_ROOT_NAME) {
-              klass.push('iroot');
-            }
             if (d.depth === 1) {
               klass.push('start-point');
             }
@@ -220,23 +217,6 @@
         return _results;
       });
       return this.__set_text_class(1);
-    };
-
-    KnowledgeNetGraph.prototype._links = function() {
-      var edges;
-      edges = this.tree_data.edges;
-      return this.links = this.graph.selectAll('.link').data(edges).enter().append('path').attr({
-        'd': d3.svg.diagonal(),
-        'class': (function(_this) {
-          return function(d) {
-            if (d.source.name === _this.IMAGINARY_ROOT_NAME) {
-              return 'iroot link';
-            } else {
-              return 'link';
-            }
-          };
-        })(this)
-      });
     };
 
     KnowledgeNetGraph.prototype._init_pos = function() {

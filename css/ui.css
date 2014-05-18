@@ -2977,17 +2977,11 @@ body.sample .page-content .graph-paper {
         .knowledge-net-paper svg.knsvg g.node text.name.hide {
           display: inherit;
           opacity: 0.6; } }
-    .knowledge-net-paper svg.knsvg g.node text.name.iroot {
-      pointer-events: none;
-      display: none; }
   .knowledge-net-paper svg.knsvg g.node circle {
     fill: #232B2D;
     stroke: #65B2EF;
     stroke-width: 5px;
     cursor: pointer; }
-    .knowledge-net-paper svg.knsvg g.node circle.iroot {
-      display: none;
-      pointer-events: none; }
     .knowledge-net-paper svg.knsvg g.node circle.start-point {
       stroke: #FFB43B; }
     .knowledge-net-paper svg.knsvg g.node circle:hover {
@@ -3000,6 +2994,3 @@ body.sample .page-content .graph-paper {
     .knowledge-net-paper svg.knsvg path.link.hover {
       stroke: #ff5a1d;
       stroke-width: 5px; }
-    .knowledge-net-paper svg.knsvg path.link.iroot {
-      display: none;
-      pointer-events: none; }

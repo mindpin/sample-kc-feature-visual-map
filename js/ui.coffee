@@ -11,7 +11,6 @@ class KnowledgeNetGraph
       .appendTo @$elm
 
     @SCALE = [0.25, 2]
-    @IMAGINARY_ROOT_NAME = 'IROOT'
 
     @CIRCLE_RADIUS = 15
 
@@ -226,27 +225,33 @@ class KnowledgeNetGraph
       klass.push 'hide'
 
     @name_texts
-      .attr 'class', (d)=>
-        if d.name is @IMAGINARY_ROOT_NAME
-          "iroot " + klass.join ' '
-        else
-          klass.join ' '
+      .attr 
+        'class': klass.join ' '
 
   _tree: ->
     @tree_data = @knet.get_tree_nesting_data()
 
     imarginay_root =
-      name: @IMAGINARY_ROOT_NAME
       children: @tree_data.roots
 
     tree = d3.layout.tree()
       .nodeSize [@NODE_WIDTH, @NODE_HEIGHT]
 
-    @tree_nodes = tree.nodes imarginay_root
+    @dataset_nodes = tree.nodes(imarginay_root)[1..-1]
+    @dataset_edges = @tree_data.edges
+
+  _links: ->
+    @links = @graph.selectAll('.link')
+      .data @dataset_edges
+      .enter()
+      .append 'path'
+      .attr
+        'd': d3.svg.diagonal()
+        'class': 'link'
 
   _nodes: ->
     @nodes = @graph.selectAll('.node')
-      .data @tree_nodes
+      .data @dataset_nodes
       .enter()
       .append 'g'
       .attr
@@ -259,7 +264,6 @@ class KnowledgeNetGraph
         'r': @CIRCLE_RADIUS
         'class': (d)=>
           klass = []
-          if d.name is @IMAGINARY_ROOT_NAME then klass.push 'iroot'
           if d.depth is 1 then klass.push 'start-point'
           klass.join ' '
 
@@ -278,18 +282,6 @@ class KnowledgeNetGraph
 
     @__set_text_class(1)
 
-
-  _links: ->
-    edges = @tree_data.edges
-
-    @links = @graph.selectAll('.link')
-      .data edges
-      .enter()
-      .append 'path'
-      .attr
-        'd': d3.svg.diagonal()
-        'class': (d)=>
-          if d.source.name is @IMAGINARY_ROOT_NAME then 'iroot link' else 'link'
 
   _init_pos: ->
     first_node = @tree_data.roots[0]

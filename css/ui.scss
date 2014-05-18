@@ -222,11 +222,6 @@ body.sample {
           opacity: 0.6;
         }
       }
-
-      &.iroot {
-        pointer-events: none;
-        display: none;
-      }
     }
 
     circle {
@@ -234,11 +229,6 @@ body.sample {
       stroke: #65B2EF;
       stroke-width: 5px;
       cursor: pointer;
-
-      &.iroot {
-        display: none;
-        pointer-events: none;
-      }
 
       &.start-point {
         stroke: #FFB43B;
@@ -260,11 +250,6 @@ body.sample {
     &.hover {
       stroke: mix(red, #FFB43B, 50%);
       stroke-width: 5px;
-    }
-
-    &.iroot {
-      display: none;
-      pointer-events: none;
     }
   }
 }
