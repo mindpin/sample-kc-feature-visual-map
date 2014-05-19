@@ -4,13 +4,114 @@ jQuery ->
     # jQuery.getJSON 'fixture/graph.json', (data)->  
       new KnowledgeNetGraph jQuery('.graph-paper'), data
 
+class Zoomer
+  constructor: (@host)->
+    @SCALE = [0.25, 2]
+
+    @scale = 1
+    @zoom_transition = false
+
+    @viewport_w = @host.$elm.width()
+    @viewport_h = @host.$elm.height()
+
+    @center_x = @viewport_w / 2
+    @center_y = @viewport_h / 2
+
+    @zoom_behavior = d3.behavior.zoom()
+      .scaleExtent @SCALE
+      .center [@center_x, @center_y]
+      .on 'zoom', @zoomed
+
+  # 缩小
+  zoomout: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale > 1.414 then 1.414
+    else if scale > 1     then 1
+    else if scale > 0.707 then 0.707
+    else if scale > 0.5   then 0.5
+    else if scale > 0.354 then 0.354
+    else 0.25
+
+    @zoom_transition = true
+    @scaleto new_scale
+
+  # 放大
+  zoomin: =>
+    scale = @zoom_behavior.scale()
+    
+    new_scale = 
+    if scale < 0.354      then 0.354
+    else if scale < 0.5   then 0.5
+    else if scale < 0.707 then 0.707
+    else if scale < 1     then 1
+    else if scale < 1.414 then 1.414
+    else 2
+
+    @zoom_transition = true
+    @scaleto new_scale
+
+  zoomed: =>
+    @scale     = @zoom_behavior.scale()
+    @translate = @zoom_behavior.translate()
+
+    console.log @scale, @translate
+
+    @host.deal_zoom(@scale, @translate, @zoom_transition)
+    @zoom_transition = false
+
+  scaleto: (new_scale)->
+    scale     = @zoom_behavior.scale()
+    translate = @zoom_behavior.translate()
+
+    # 注释不要删除噢 ~~~~~
+    # 根据以下公式换算
+    # translate[0] = [ox * scale + (1 - scale) / 2 * w]
+    # translate[1] = [oy * scale + (1 - scale) / 2 * h]
+    # -->
+    # ox = (translate[0] - (1 - scale) / 2 * w) / scale
+    # ox = translate[0] / scale - (1 - scale) / 2 * w / scale
+    # ox = translate[0] / scale - (w / scale - w) / 2
+    # ox = translate[0] / scale - w / 2 / scale + w / 2
+    # ox = (translate[0] - w / 2) / scale + w / 2
+
+    # -->
+    # otx = (translate[0] - @center_x) / scale + @center_x
+    # oty = (translate[1] - @center_y) / scale + @center_y
+
+    # -->
+    # tn = (1 - new_scale) / 2
+    # tx = tn * @viewport_w
+    # ty = tn * @viewport_h
+
+    # tx = @center_x - @center_x * new_scale
+    # ty = @center_y - @center_y * new_scale
+
+    # t0 = otx * scale
+    # t1 = oty * scale
+
+    # t0 = translate[0] + @center_x * (scale - 1)
+    # t1 = translate[1] + @center_y * (scale - 1)
+
+    # --> 最终导出！
+
+    new_translate = [
+      translate[0] + @center_x * scale - @center_x * new_scale
+      translate[1] + @center_y * scale - @center_y * new_scale
+    ]
+
+    @zoom_behavior
+      .scale new_scale
+      .translate new_translate
+      .event @host.svg
+
+
 class KnowledgeNetGraph
   constructor: (@$elm, @data)->
     @$paper = jQuery '<div></div>'
       .addClass 'knowledge-net-paper'
       .appendTo @$elm
-
-    @SCALE = [0.25, 2]
 
     @CIRCLE_RADIUS = 15
 
@@ -18,8 +119,6 @@ class KnowledgeNetGraph
 
     @offset_x = 0
     @offset_y = 0
-
-    @scale = 1
 
     @knet = new KnowledgeNet @data
 
@@ -37,6 +136,25 @@ class KnowledgeNetGraph
     @_bar_events()
 
     @_init_pos()
+
+
+  deal_zoom: (scale, translate, transition)->
+    g = 
+      if transition
+      then @graph.transition() 
+      else @graph
+
+    tx = translate[0] + @offset_x * scale
+    ty = translate[1]
+
+    g.attr 'transform', 
+      "translate(#{tx}, #{ty})scale(#{scale})"
+
+    @__set_text_class scale
+    @$scale.text "#{Math.round(scale * 100)} %"
+    # bugfix for phone
+    @hide_point_info()
+
 
   _bar: ->
     @__bar_zoom()
@@ -154,8 +272,8 @@ class KnowledgeNetGraph
     o = $e.offset()
     o1 = @$paper.offset()
 
-    l = o.left - o1.left + @CIRCLE_RADIUS * 2 * @scale + 30
-    t = o.top - o1.top + @CIRCLE_RADIUS * @scale - 30
+    l = o.left - o1.left + @CIRCLE_RADIUS * 2 * @zoomer.scale + 30
+    t = o.top - o1.top + @CIRCLE_RADIUS * @zoomer.scale - 30
 
     @$point_info
       .addClass 'show'
@@ -168,71 +286,20 @@ class KnowledgeNetGraph
 
 
   _bar_events: ->
-    @$scale_minus.on 'click', @__zoomout
-    @$scale_plus.on 'click', @__zoomin
-
-  # 缩小
-  __zoomout: =>
-    scale = @zoom_behavior.scale()
-    
-    new_scale = 
-    if scale > 1.414 then 1.414
-    else if scale > 1     then 1
-    else if scale > 0.707 then 0.707
-    else if scale > 0.5   then 0.5
-    else if scale > 0.354 then 0.354
-    else 0.25
-
-    @zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @svg
-
-  # 放大
-  __zoomin: =>
-    scale = @zoom_behavior.scale()
-    
-    new_scale = 
-    if scale < 0.354      then 0.354
-    else if scale < 0.5   then 0.5
-    else if scale < 0.707 then 0.707
-    else if scale < 1     then 1
-    else if scale < 1.414 then 1.414
-    else 2
-
-    @zoom_transition = true
-    @zoom_behavior.scale(new_scale).event @svg
+    @$scale_minus.on 'click', @zoomer.zoomout
+    @$scale_plus.on 'click', @zoomer.zoomin
 
   _svg: ->
-    @zoom_behavior = d3.behavior.zoom()
-      .scaleExtent @SCALE
-      .center [@$elm.width() / 2, @$elm.height() / 2]
-      .on 'zoom', @__zoom
+    @zoomer = new Zoomer @
 
     @svg = d3.select @$paper[0]
       .append 'svg'
         .attr 'class', 'knsvg'
-        .call @zoom_behavior
+        .call @zoomer.zoom_behavior
         .on 'dblclick.zoom', null
 
     @graph = @svg.append('g')
 
-  __zoom: =>
-    scale = @zoom_behavior.scale()
-    translate = @zoom_behavior.translate()
-    @__set_text_class scale
-
-    g = if @zoom_transition then @graph.transition() else @graph
-    @zoom_transition = false
-
-    g
-      .attr 'transform',
-        "translate(#{translate[0] + @offset_x * scale}, #{translate[1]})
-        scale(#{scale})"
-
-    @$scale.text "#{Math.round(scale * 100)} %"
-    @scale = scale
-
-    # bugfix for phone
-    @hide_point_info()
 
   __set_text_class: (scale)->
     klass = ['name']
@@ -301,8 +368,8 @@ class KnowledgeNetGraph
   _init_pos: ->
     first_node = @tree_data.roots[0]
     @offset_x = - first_node.x + @$elm.width() * 0.4
-    
-    @zoom_behavior
+
+    @zoomer.zoom_behavior
       .scale 0.75
       .event @svg
 
