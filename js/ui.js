@@ -23,25 +23,25 @@
       this.zoom_transition = false;
       this.viewport_w = this.host.$elm.width();
       this.viewport_h = this.host.$elm.height();
-      this.zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).center([this.viewport_w / 2, this.viewport_h / 2]).on('zoom', this.zoomed);
+      this.center_x = this.viewport_w / 2;
+      this.center_y = this.viewport_h / 2;
+      this.zoom_behavior = d3.behavior.zoom().scaleExtent(this.SCALE).center([this.center_x, this.center_y]).on('zoom', this.zoomed);
     }
 
     Zoomer.prototype.zoomout = function() {
-      var new_scale, scale, translate;
+      var new_scale, scale;
       scale = this.zoom_behavior.scale();
-      translate = this.zoom_behavior.translate();
       new_scale = scale > 1.414 ? 1.414 : scale > 1 ? 1 : scale > 0.707 ? 0.707 : scale > 0.5 ? 0.5 : scale > 0.354 ? 0.354 : 0.25;
       this.zoom_transition = true;
-      return this.zoom_behavior.scale(new_scale).event(this.host.svg);
+      return this.scaleto(new_scale);
     };
 
     Zoomer.prototype.zoomin = function() {
-      var new_scale, scale, translate;
+      var new_scale, scale;
       scale = this.zoom_behavior.scale();
-      translate = this.zoom_behavior.translate();
       new_scale = scale < 0.354 ? 0.354 : scale < 0.5 ? 0.5 : scale < 0.707 ? 0.707 : scale < 1 ? 1 : scale < 1.414 ? 1.414 : 2;
       this.zoom_transition = true;
-      return this.zoom_behavior.scale(new_scale).event(this.host.svg);
+      return this.scaleto(new_scale);
     };
 
     Zoomer.prototype.zoomed = function() {
@@ -50,6 +50,14 @@
       console.log(this.scale, this.translate);
       this.host.deal_zoom(this.scale, this.translate, this.zoom_transition);
       return this.zoom_transition = false;
+    };
+
+    Zoomer.prototype.scaleto = function(new_scale) {
+      var new_translate, scale, translate;
+      scale = this.zoom_behavior.scale();
+      translate = this.zoom_behavior.translate();
+      new_translate = [translate[0] + this.center_x * scale - this.center_x * new_scale, translate[1] + this.center_y * scale - this.center_y * new_scale];
+      return this.zoom_behavior.scale(new_scale).translate(new_translate).event(this.host.svg);
     };
 
     return Zoomer;
