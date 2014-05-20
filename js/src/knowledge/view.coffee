@@ -1,9 +1,9 @@
 define (require, exports, module)->
-  KnowledgeNet = require 'knowledge/knowledge'
-  Zoomer = require 'knowledge/zoomer'
+  KnowledgeNet = require 'knowledge/net'
+  Zoomer       = require 'knowledge/zoomer'
   require 'd3'
 
-  class KnowledgeNetGraph
+  class KnowledgeView
     constructor: (@$elm, @data)->
       @$paper = jQuery '<div></div>'
         .addClass 'knowledge-net-paper'
@@ -13,6 +13,8 @@ define (require, exports, module)->
 
       [@NODE_WIDTH, @NODE_HEIGHT] = [150, 180]
 
+      @width = @$elm.width()
+      @height = @$elm.height()
       @offset_x = 0
       @offset_y = 0
 
@@ -187,14 +189,7 @@ define (require, exports, module)->
 
     _svg: ->
       @zoomer = new Zoomer @
-
-      @svg = d3.select @$paper[0]
-        .append 'svg'
-          .attr 'class', 'knsvg'
-          .call @zoomer.zoom_behavior
-          .on 'dblclick.zoom', null
-
-      @graph = @svg.append('g')
+      @graph = @zoomer.handle_svg.append('g')
 
 
     __set_text_class: (scale)->
@@ -263,11 +258,8 @@ define (require, exports, module)->
 
     _init_pos: ->
       first_node = @tree_data.roots[0]
-      @offset_x = - first_node.x + @$elm.width() * 0.4
-
-      @zoomer.zoom_behavior
-        .scale 0.75
-        .event @svg
+      @offset_x = - first_node.x + @width * 0.3
+      @zoomer.scaleto 0.75
 
     _events: ->
       that = @

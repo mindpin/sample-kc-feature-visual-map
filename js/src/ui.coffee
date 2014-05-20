@@ -5,9 +5,9 @@ seajs.config
   paths:
     'knowledge': 'dist/knowledge'
 
-seajs.use 'knowledge/graph', (KnowledgeNetGraph)->
+seajs.use 'knowledge/view', (KnowledgeView)->
   jQuery ->
     if jQuery('body.sample').length
       jQuery.getJSON 'data/js/js.json', (data)->
       # jQuery.getJSON 'fixture/graph.json', (data)->  
-        new KnowledgeNetGraph jQuery('.graph-paper'), data
+        new KnowledgeView jQuery('.graph-paper'), data

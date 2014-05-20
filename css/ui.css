@@ -2958,10 +2958,10 @@ body.sample .page-content .graph-paper {
       top: 20px;
       border-right-color: rgba(255, 251, 227, 0.9); }
 
-.knowledge-net-paper svg.knsvg {
+.knowledge-net-paper svg {
   width: 100%;
   height: 100%; }
-  .knowledge-net-paper svg.knsvg g.node text.name {
+  .knowledge-net-paper svg g.node text.name {
     cursor: default;
     font-size: 16px;
     fill: #fff;
@@ -2971,34 +2971,34 @@ body.sample .page-content .graph-paper {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    .knowledge-net-paper svg.knsvg g.node text.name.hide {
+    .knowledge-net-paper svg g.node text.name.hide {
       display: none;
       pointer-events: none; }
       @media (max-width: 991px) {
-        .knowledge-net-paper svg.knsvg g.node text.name.hide {
+        .knowledge-net-paper svg g.node text.name.hide {
           display: inherit;
           opacity: 0.6; } }
-  .knowledge-net-paper svg.knsvg g.node circle {
+  .knowledge-net-paper svg g.node circle {
     fill: #232B2D;
     stroke: #65B2EF;
     stroke-width: 5px;
     cursor: pointer; }
-    .knowledge-net-paper svg.knsvg g.node circle.start-point {
+    .knowledge-net-paper svg g.node circle.start-point {
       stroke: #FFB43B; }
-    .knowledge-net-paper svg.knsvg g.node circle.depend {
+    .knowledge-net-paper svg g.node circle.depend {
       fill: #FFB43B;
       stroke: #FFB43B; }
-    .knowledge-net-paper svg.knsvg g.node circle:hover {
+    .knowledge-net-paper svg g.node circle:hover {
       stroke: #ff5a1d;
       stroke-width: 7px;
       fill: #ff5a1d; }
-  .knowledge-net-paper svg.knsvg .link {
+  .knowledge-net-paper svg .link {
     fill: none;
     stroke: #576163;
     stroke-width: 3px; }
-    .knowledge-net-paper svg.knsvg .link.direct-depend {
+    .knowledge-net-paper svg .link.direct-depend {
       stroke: #ff5a1d;
       stroke-width: 7px; }
-    .knowledge-net-paper svg.knsvg .link.depend {
+    .knowledge-net-paper svg .link.depend {
       stroke: #FFB43B;
       stroke-width: 5px; }

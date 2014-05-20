@@ -10,11 +10,11 @@
     }
   });
 
-  seajs.use('knowledge/graph', function(KnowledgeNetGraph) {
+  seajs.use('knowledge/view', function(KnowledgeView) {
     return jQuery(function() {
       if (jQuery('body.sample').length) {
         return jQuery.getJSON('data/js/js.json', function(data) {
-          return new KnowledgeNetGraph(jQuery('.graph-paper'), data);
+          return new KnowledgeView(jQuery('.graph-paper'), data);
         });
       }
     });
