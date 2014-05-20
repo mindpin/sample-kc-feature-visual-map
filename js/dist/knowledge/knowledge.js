@@ -3,6 +3,10 @@
   var DistanceSet, KnowledgeNet, edge_equal,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
+  define(function(require, exports, module) {
+    return KnowledgeNet;
+  });
+
   edge_equal = function(e1, e2) {
     return e1[0] === e2[0] && e1[1] === e2[1];
   };
@@ -378,10 +382,6 @@
     return DistanceSet;
 
   })();
-
-  KnowledgeNet.DistanceSet = DistanceSet;
-
-  window.KnowledgeNet = KnowledgeNet;
 
 }).call(this);
 

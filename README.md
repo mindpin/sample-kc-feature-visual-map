@@ -7,7 +7,7 @@ KnowledgeCamp 产品 SAMPLE-1 用于展示可视化知识网络图的绘制
 
 ```
 scss --watch .
-coffee --watch --compile --map */*.coffee
+coffee --output js/dist -wcm js/src
 ruby watch_haml.rb .
 ```
 
@@ -24,3 +24,7 @@ ruby -run -e httpd . -p 4000
 ```
 test.html
 ```
+
+### 参考
+sea.js 和 assets pipeline 并不容易整合<br/>
+这篇文章或许可以参考：http://chaoskeh.com/blog/how-to-integrates-seajs-with-rails.html

@@ -1,3 +1,6 @@
+define (require, exports, module)->
+  return KnowledgeNet
+
 edge_equal = (e1, e2)->
   e1[0] == e2[0] and e1[1] == e2[1]
 
@@ -292,7 +295,3 @@ class DistanceSet
 
     if d0 != distance && Math.min(d0, distance) == 1
       @redundant_edges.push [target_id, point_id]
-
-
-KnowledgeNet.DistanceSet = DistanceSet
-window.KnowledgeNet = KnowledgeNet
