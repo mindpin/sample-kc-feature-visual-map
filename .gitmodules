@@ -6,4 +6,4 @@
 	url = git://github.com/mindpin/lily.git
 [submodule "js/graph"]
 	path = js/graph
-	url = git@github.com:mindpin/knowledge-graph-js.git
+	url = git://github.com/mindpin/knowledge-graph-js.git
