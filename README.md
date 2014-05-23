@@ -7,7 +7,7 @@ KnowledgeCamp 产品 SAMPLE-1 用于展示可视化知识网络图的绘制
 
 ```
 scss --watch .
-coffee --output js/dist -wcm js/src
+coffee --output js/graph/dist -wcm js/graph/src
 ruby watch_haml.rb .
 ```
 
