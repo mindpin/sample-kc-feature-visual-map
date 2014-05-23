@@ -2761,14 +2761,14 @@ body.lily-example-doc .code-highlight {
 body.lily-example-doc .example + .code-highlight {
   margin-top: -16px; }
 
-body.sample .page-content .sidebar {
+body.sample .page-content .sidebar, body.sample-new-js .page-content .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 100px;
   background-color: #1B2224; }
-body.sample .page-content .graph-paper {
+body.sample .page-content .graph-paper, body.sample-new-js .page-content .graph-paper {
   position: fixed;
   top: 0;
   right: 0;
@@ -2777,9 +2777,9 @@ body.sample .page-content .graph-paper {
   background-color: #232B2D;
   overflow: hidden; }
 @media (max-width: 991px) {
-  body.sample .page-content .sidebar {
+  body.sample .page-content .sidebar, body.sample-new-js .page-content .sidebar {
     width: 0; }
-  body.sample .page-content .graph-paper {
+  body.sample .page-content .graph-paper, body.sample-new-js .page-content .graph-paper {
     left: 0; } }
 
 .knowledge-net-paper {

@@ -13,7 +13,12 @@
   seajs.use('knowledge/view', function(KnowledgeView) {
     return jQuery(function() {
       if (jQuery('body.sample').length) {
-        return jQuery.getJSON('data/js/js.json', function(data) {
+        jQuery.getJSON('data/js/js.json', function(data) {
+          return new KnowledgeView(jQuery('.graph-paper'), data);
+        });
+      }
+      if (jQuery('body.sample-new-js').length) {
+        return jQuery.getJSON('data/js/new-js.json', function(data) {
           return new KnowledgeView(jQuery('.graph-paper'), data);
         });
       }

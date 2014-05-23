@@ -11,3 +11,7 @@ seajs.use 'knowledge/view', (KnowledgeView)->
       jQuery.getJSON 'data/js/js.json', (data)->
       # jQuery.getJSON 'fixture/graph.json', (data)->  
         new KnowledgeView jQuery('.graph-paper'), data
+
+    if jQuery('body.sample-new-js').length
+      jQuery.getJSON 'data/js/new-js.json', (data)->
+        new KnowledgeView jQuery('.graph-paper'), data
